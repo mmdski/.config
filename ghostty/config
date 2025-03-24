@@ -1,0 +1,7 @@
+theme = Adwaita Dark
+font-family = "Source Code Pro"
+font-size = 14
+quit-after-last-window-closed = true
+shell-integration-features = "no-cursor"
+cursor-style = "block"
+cursor-style-blink = false
