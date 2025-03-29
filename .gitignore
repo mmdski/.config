@@ -1,5 +1,11 @@
 *
 !.gitignore
+
 !emacs/
 !emacs/init.el
 !emacs/early-init.el
+
+!ghostty/
+!ghostty/config
+
+
