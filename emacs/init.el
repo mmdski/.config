@@ -15,6 +15,8 @@
   "Preferred light theme")
 (defvar md/dark-theme 'adwaita-dark
   "Preferred dark theme")
+;; (defvar md/dark-theme 'doom-xcode
+;;   "Preferred dark theme")
 
 (defun md/toggle-theme ()
   "Toggle between light and dark themese."
@@ -32,7 +34,8 @@
 
 (load-theme md/dark-theme t)
 
-(set-face-attribute 'default nil :font "Source Code Pro-14")
+; (set-face-attribute 'default nil :font "Source Code Pro-14")
+(add-to-list 'default-frame-alist '(font . "Source Code Pro-14"))
 
 ;; minor modes
 (tool-bar-mode -1)
@@ -47,11 +50,6 @@
 (setq ring-bell-function 'ignore)
 
 ;; major modes
-(unless (package-installed-p 'lua-mode)
-  (package-refresh-contents)
-  (package-install 'lua-mode))
-(add-to-list 'auto-mode-alist '("\\.lua\\'" . lua-mode))
-
 (unless (package-installed-p 'magit)
   (package-refresh-contents)
   (package-install 'magit))
@@ -68,23 +66,13 @@
 
 ;; macos specific settings
 ;; keybindings
-;; (when (eq system-type 'darwin)  ; macOS
-;;   (setq mac-command-modifier 'meta)  ; Command key is Meta
-;;   (setq mac-option-modifier 'super))
-
-;; set location of libgccjit
 (when (eq system-type 'darwin)  ; macOS
- (let ((gccjitpath "/opt/homebrew/lib/gcc/14:/opt/homebrew/lib"))
- (mapc (lambda (var-name) (md/append-env-var var-name gccjitpath))
-       '("LIBRARY_PATH" "LD_LIBRARY_PATH" "PATH")))
-)
+  (setq mac-command-modifier 'meta)  ; Command key is Meta
+  (setq mac-option-modifier 'super))
 
-;; set location of info files for homebrew installs
-(when (eq system-type 'darwin)
-  (add-to-list 'Info-directory-list "/opt/homebrew/share/info")
-  (add-to-list 'Info-directory-list "/opt/homebrew/opt/texinfo/share/info")
-  (add-to-list 'Info-directory-list "/opt/homebrew/opt/emacs-plus@30/share/info/emacs"))
+;; hooks
+(add-hook 'before-save-hook
+	  'delete-trailing-whitespace
+	  'delete-trailing-lines)
 
-;; custom file
-(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
-(load custom-file 'noerror)
+
