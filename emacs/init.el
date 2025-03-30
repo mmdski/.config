@@ -4,19 +4,26 @@
         ("melpa" . "https://melpa.org/packages/")))
 (package-initialize)
 
-;; --- Personal Commands ---
-(defun md/append-env-var (var-name value)
-  "Append VALUE to the beginning of current value of env variable VAR-NAME."
-  (setenv var-name (if (getenv var-name)
-                       (format "%s:%s" value (getenv var-name))
-		     value)))
+;; macos specific settings
+(when (eq system-type 'darwin)  ; macOS
+  (setq mac-command-modifier 'meta)  ; Command key is Meta
+  (setq mac-option-modifier 'super) ; Option key is Super
+  (add-to-list 'Info-directory-list "/opt/homebrew/share/info")
+  (add-to-list 'Info-directory-list "/opt/homebrew/share/info/emacs")
+  (setenv "PATH" (concat "/opt/homebrew/bin:" (getenv "PATH")))
+  (add-to-list 'exec-path "/opt/homebrew/bin"))
 
+;; themes
 (defvar md/light-theme 'adwaita
   "Preferred light theme")
 (defvar md/dark-theme 'adwaita-dark
   "Preferred dark theme")
-;; (defvar md/dark-theme 'doom-xcode
-;;   "Preferred dark theme")
+
+(unless (package-installed-p 'adwaita-dark-theme)
+  (package-refresh-contents)
+  (package-install 'adwaita-dark-theme))
+
+(load-theme md/dark-theme t)
 
 (defun md/toggle-theme ()
   "Toggle between light and dark themese."
@@ -27,22 +34,33 @@
 	(load-theme md/dark-theme t)
       (load-theme md/light-theme t))))
 
- ;; themes
-(unless (package-installed-p 'adwaita-dark-theme)
-  (package-refresh-contents)
-  (package-install 'adwaita-dark-theme))
-
-(load-theme md/dark-theme t)
-
-; (set-face-attribute 'default nil :font "Source Code Pro-14")
 (add-to-list 'default-frame-alist '(font . "Source Code Pro-14"))
+
+;; formatting
+(add-hook 'before-save-hook
+	  'delete-trailing-whitespace
+	  'delete-trailing-lines)
+(setq require-final-newline t)
+
+;; tressitter
+(require 'treesit-auto)
+(setq treesit-auto-install 'prompt)
+(global-treesit-auto-mode)
 
 ;; minor modes
 (tool-bar-mode -1)
 (scroll-bar-mode 0)
-(setq display-line-numbers-type 'relative)
-(global-display-line-numbers-mode)
 (blink-cursor-mode 0)
+(setq column-number-mode t)
+
+(global-display-line-numbers-mode -1)
+(setq display-line-numbers-type 'relative)
+(dolist (hook '(prog-mode-hook
+		conf-mode-hook
+		text-mode-hook))
+  (add-hook hook (lambda () (display-line-numbers-mode t))))
+
+(setq ispell-program-name "aspell")
 
 (setq-default line-spacing 2
 	      truncate-lines t
@@ -50,29 +68,38 @@
 (setq ring-bell-function 'ignore)
 
 ;; major modes
+(add-hook 'prog-mode-hook #'flyspell-prog-mode)
+
 (unless (package-installed-p 'magit)
   (package-refresh-contents)
   (package-install 'magit))
 
 ;; org-mode options
+(add-hook 'org-mode-hook #'flyspell-mode)
+(add-hook 'org-mode-hook (lambda () (display-line-numbers-mode 1)))
 (setq org-latex-create-formula-image-program 'dvisvgm)
 (setq org-file-apps
       '((auto-mode . emacs)
 	("\\.pdf\\'" . emacs)))
 
+;; toml-ts-mode
+(add-to-list 'auto-mode-alist '("\\.toml\\'" . toml-ts-mode))
+(add-hook 'toml-mode-hook #'flyspell-mode)
+(add-hook 'toml-ts-mode-hook #'flyspell-mode)
+
 (setq dired-listing-switches "-alh")
 
 (setq doc-view-resolution 300)
 
-;; macos specific settings
-;; keybindings
-(when (eq system-type 'darwin)  ; macOS
-  (setq mac-command-modifier 'meta)  ; Command key is Meta
-  (setq mac-option-modifier 'super))
+(pdf-tools-install)
+(add-to-list 'auto-mode-alist '("\\.pdf\\'" . pdf-view-mode))
+(add-hook 'pdf-view-mode-hook (lambda () (display-line-numbers-mode -1)))
 
-;; hooks
-(add-hook 'before-save-hook
-	  'delete-trailing-whitespace
-	  'delete-trailing-lines)
+;; python mode
+(add-hook 'python-mode-hook 'blacken-mode)
+(add-hook 'python-mode-hook #'eglot-ensure)
+(add-hook 'python-ts-mode-hook 'blacken-mode)
+(add-hook 'python-ts-mode-hook #'eglot-ensure)
 
-
+(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+(load custom-file 'noerror)
