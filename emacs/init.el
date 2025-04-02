@@ -4,14 +4,26 @@
         ("melpa" . "https://melpa.org/packages/")))
 (package-initialize)
 
+;; (setq md/packages ())
+;; (add-to-list 'md/packages 'adwaita-dark-theme)
+;; (add-to-list 'md/packages 'blacken)
+;; (add-to-list 'md/packages 'elisp-autofmt)
+;; (add-to-list 'md/packages 'treesit-auto)
+;; (add-to-list 'md/packages 'magit)
+;; (add-to-list 'md/packages 'pdf-tools)
+
 ;; macos specific settings
-(when (eq system-type 'darwin)  ; macOS
-  (setq mac-command-modifier 'meta)  ; Command key is Meta
-  (setq mac-option-modifier 'super) ; Option key is Super
+(when (eq system-type 'darwin) ; macOS
+  ;  (setq mac-command-modifier 'meta) ; Command key is Meta
+  ;  (setq mac-option-modifier 'super) ; Option key is Super
   (add-to-list 'Info-directory-list "/opt/homebrew/share/info")
   (add-to-list 'Info-directory-list "/opt/homebrew/share/info/emacs")
   (add-to-list 'exec-path "/opt/homebrew/bin")
-  (setenv "PATH" (concat (getenv "PATH") ":/Library/TeX/texbin")))
+  (let ((texbin-path "/Library/TeX/texbin")
+        (path-sep ":")
+        (env-path (getenv "PATH")))
+    (unless (string-match-p texbin-path env-path)
+      (setenv "PATH" (concat env-path path-sep texbin-path)))))
 
 (global-set-key (kbd "M-o") 'other-window)
 
@@ -33,7 +45,7 @@
   (let ((current-theme (car custom-enabled-themes)))
     (mapc #'disable-theme custom-enabled-themes)
     (if (eq current-theme md/light-theme)
-	(load-theme md/dark-theme t)
+        (load-theme md/dark-theme t)
       (load-theme md/light-theme t))))
 
 (add-to-list 'default-frame-alist '(font . "Source Code Pro-14"))
@@ -48,25 +60,33 @@
 (scroll-bar-mode 0)
 (blink-cursor-mode 0)
 (setq column-number-mode t)
-(dolist (hook '(prog-mode-hook
-		conf-mode-hook
-		text-mode-hook
-		emacs-lisp-mode-hook))
-  (add-hook hook (lambda ()
-		   (setq display-line-numbers-type 'relative)
-		   (display-line-numbers-mode t))))
+(dolist (hook
+         '(prog-mode-hook
+           conf-mode-hook text-mode-hook Info-mode-hook))
+  (add-hook
+   hook
+   (lambda ()
+     (setq display-line-numbers-type 'relative)
+     (display-line-numbers-mode t))))
 (setq ispell-program-name "aspell")
-(setq-default line-spacing 2
-	      truncate-lines t
-	      inhibit-splash-screen t)
+(setq-default
+ line-spacing 2
+ truncate-lines t
+ inhibit-splash-screen t)
 (setq ring-bell-function 'ignore)
 (delete-selection-mode t)
 
 ;; formatting
-(add-hook 'before-save-hook
-	  'delete-trailing-whitespace
-	  'delete-trailing-lines)
+(add-hook 'before-save-hook 'delete-trailing-whitespace
+          'delete-trailing-lines)
 (setq require-final-newline t)
+
+;; elisp-autofmt
+(add-hook 'emacs-lisp-mode-hook #'elisp-autofmt-mode)
+(add-hook
+ 'elisp-autofmt-mode-hook
+ (lambda ()
+   (add-hook 'before-save-hook #'elisp-autofmt-buffer nil 'local)))
 
 ;; major modes
 (add-hook 'prog-mode-hook #'flyspell-prog-mode)
@@ -79,9 +99,7 @@
 (add-hook 'org-mode-hook #'flyspell-mode)
 (add-hook 'org-mode-hook (lambda () (display-line-numbers-mode 1)))
 (setq org-latex-create-formula-image-program 'dvisvgm)
-(setq org-file-apps
-      '((auto-mode . emacs)
-	("\\.pdf\\'" . emacs)))
+(setq org-file-apps '((auto-mode . emacs) ("\\.pdf\\'" . emacs)))
 
 ;; obsidian
 ;; only on macOs for now
@@ -104,7 +122,8 @@
 
 (pdf-tools-install)
 (add-to-list 'auto-mode-alist '("\\.pdf\\'" . pdf-view-mode))
-(add-hook 'pdf-view-mode-hook (lambda () (display-line-numbers-mode -1)))
+(add-hook
+ 'pdf-view-mode-hook (lambda () (display-line-numbers-mode -1)))
 
 ;; python mode
 (add-hook 'python-mode-hook 'blacken-mode)
