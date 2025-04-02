@@ -4,13 +4,29 @@
         ("melpa" . "https://melpa.org/packages/")))
 (package-initialize)
 
-;; (setq md/packages ())
-;; (add-to-list 'md/packages 'adwaita-dark-theme)
-;; (add-to-list 'md/packages 'blacken)
-;; (add-to-list 'md/packages 'elisp-autofmt)
-;; (add-to-list 'md/packages 'treesit-auto)
-;; (add-to-list 'md/packages 'magit)
-;; (add-to-list 'md/packages 'pdf-tools)
+;; from tsoding's rc.el
+(defvar md/package-contents-refreshed nil)
+(defun md/package-refresh-contents-once ()
+  "Refreshes package contents once per session."
+  (when (not md/package-contents-refreshed)
+    (setq md/package-contents-refreshed t)
+    (package-refresh-contents)))
+
+(defun md/require-package (package)
+  (when (not (package-installed-p package))
+    (md/package-refresh-contents-once)
+    (package-install package)))
+
+(md/require-package 'adwaita-dark-theme)
+(md/require-package 'blacken)
+(md/require-package 'elisp-autofmt)
+(md/require-package 'treesit-auto)
+(md/require-package 'magit)
+(md/require-package 'pdf-tools)
+
+;; (unless (package-installed-p 'adwaita-dark-theme)
+;;   (package-refresh-contents)
+;;   (package-install 'adwaita-dark-theme))
 
 ;; macos specific settings
 (when (eq system-type 'darwin) ; macOS
@@ -26,10 +42,6 @@
       (setenv "PATH" (concat env-path path-sep texbin-path)))))
 
 (global-set-key (kbd "M-o") 'other-window)
-
-(unless (package-installed-p 'adwaita-dark-theme)
-  (package-refresh-contents)
-  (package-install 'adwaita-dark-theme))
 
 ;; themes
 (defvar md/light-theme 'adwaita
@@ -90,10 +102,6 @@
 
 ;; major modes
 (add-hook 'prog-mode-hook #'flyspell-prog-mode)
-
-(unless (package-installed-p 'magit)
-  (package-refresh-contents)
-  (package-install 'magit))
 
 ;; org-mode options
 (add-hook 'org-mode-hook #'flyspell-mode)
