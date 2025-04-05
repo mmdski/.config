@@ -17,16 +17,20 @@
     (md/package-refresh-contents-once)
     (package-install package)))
 
-(md/require-package 'adwaita-dark-theme)
-(md/require-package 'blacken)
-(md/require-package 'elisp-autofmt)
-(md/require-package 'treesit-auto)
-(md/require-package 'magit)
-(md/require-package 'pdf-tools)
+(defun md/apply-frame-alist (alist)
+  "Apply frame parameters from ALIST to the current frame."
+  (let ((frame (selected-frame)))
+    (dolist (param alist)
+      (modify-frame-parameters frame (list param)))))
 
-;; (unless (package-installed-p 'adwaita-dark-theme)
-;;   (package-refresh-contents)
-;;   (package-install 'adwaita-dark-theme))
+(defun md/sf ()
+  "Apply small frame settings."
+  (interactive)
+  (md/apply-frame-alist md/small-frame-alist))
+(defun md/bf ()
+  "Apply big frame settings."
+  (interactive)
+  (md/apply-frame-alist md/big-frame-alist))
 
 ;; macos specific settings
 (when (eq system-type 'darwin) ; macOS
@@ -41,9 +45,16 @@
     (unless (string-match-p texbin-path env-path)
       (setenv "PATH" (concat env-path path-sep texbin-path)))))
 
+;; keybindings
 (global-set-key (kbd "M-o") 'other-window)
 
+;; global formatting
+(add-hook 'before-save-hook 'delete-trailing-whitespace
+          'delete-trailing-lines)
+(setq require-final-newline t)
+
 ;; themes
+(md/require-package 'adwaita-dark-theme)
 (defvar md/light-theme 'adwaita
   "Preferred light theme")
 (defvar md/dark-theme 'adwaita-dark
@@ -52,7 +63,7 @@
 (load-theme md/dark-theme t)
 
 (defun md/toggle-theme ()
-  "Toggle between light and dark themese."
+  "Toggle between light and dark themes."
   (interactive)
   (let ((current-theme (car custom-enabled-themes)))
     (mapc #'disable-theme custom-enabled-themes)
@@ -63,7 +74,9 @@
 (add-to-list 'default-frame-alist '(font . "Source Code Pro-14"))
 
 ;; tressitter
+(md/require-package 'treesit-auto)
 (require 'treesit-auto)
+26
 (setq treesit-auto-install 'prompt)
 (global-treesit-auto-mode)
 
@@ -88,12 +101,8 @@
 (setq ring-bell-function 'ignore)
 (delete-selection-mode t)
 
-;; formatting
-(add-hook 'before-save-hook 'delete-trailing-whitespace
-          'delete-trailing-lines)
-(setq require-final-newline t)
-
 ;; elisp-autofmt
+(md/require-package 'elisp-autofmt)
 (add-hook 'emacs-lisp-mode-hook #'elisp-autofmt-mode)
 (add-hook
  'elisp-autofmt-mode-hook
@@ -101,6 +110,8 @@
    (add-hook 'before-save-hook #'elisp-autofmt-buffer nil 'local)))
 
 ;; major modes
+(md/require-package 'magit)
+
 (add-hook 'prog-mode-hook #'flyspell-prog-mode)
 
 ;; org-mode options
@@ -128,16 +139,21 @@
 
 (setq doc-view-resolution 300)
 
+(md/require-package 'pdf-tools)
 (pdf-tools-install)
 (add-to-list 'auto-mode-alist '("\\.pdf\\'" . pdf-view-mode))
 (add-hook
  'pdf-view-mode-hook (lambda () (display-line-numbers-mode -1)))
 
 ;; python mode
+(md/require-package 'blacken)
 (add-hook 'python-mode-hook 'blacken-mode)
 (add-hook 'python-mode-hook #'eglot-ensure)
 (add-hook 'python-ts-mode-hook 'blacken-mode)
 (add-hook 'python-ts-mode-hook #'eglot-ensure)
+
+(when (not (eq system-type 'windows-nt))
+  (md/require-package 'vterm))
 
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
 (load custom-file 'noerror)
