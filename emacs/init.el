@@ -76,7 +76,7 @@
 ;; tressitter
 (md/require-package 'treesit-auto)
 (require 'treesit-auto)
-26
+
 (setq treesit-auto-install 'prompt)
 (global-treesit-auto-mode)
 
@@ -84,6 +84,8 @@
 (tool-bar-mode -1)
 (scroll-bar-mode 0)
 (blink-cursor-mode 0)
+(when (eq system-type 'gnu/linux)
+  (menu-bar-mode -1))
 (setq column-number-mode t)
 (dolist (hook
          '(prog-mode-hook
