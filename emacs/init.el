@@ -39,11 +39,18 @@
   (add-to-list 'Info-directory-list "/opt/homebrew/share/info")
   (add-to-list 'Info-directory-list "/opt/homebrew/share/info/emacs")
   (add-to-list 'exec-path "/opt/homebrew/bin")
+  (add-to-list
+   'exec-path "/opt/homebrew/opt/make/libexec/gnubin/make")
   (let ((texbin-path "/Library/TeX/texbin")
         (path-sep ":")
         (env-path (getenv "PATH")))
     (unless (string-match-p texbin-path env-path)
-      (setenv "PATH" (concat env-path path-sep texbin-path)))))
+      (setenv "PATH" (concat env-path path-sep texbin-path))))
+  (let ((make-path "/opt/homebrew/opt/make/libexec/gnubin")
+        (path-sep ":")
+        (env-path (getenv "PATH")))
+    (unless (string-match-p make-path env-path)
+      (setenv "PATH" (concat make-path path-sep env-path)))))
 
 ;; keybindings
 (global-set-key (kbd "M-o") 'other-window)
