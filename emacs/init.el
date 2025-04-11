@@ -17,24 +17,18 @@
     (md/package-refresh-contents-once)
     (package-install package)))
 
-(defun md/apply-frame-alist (alist)
-  "Apply frame parameters from ALIST to the current frame."
-  (let ((frame (selected-frame)))
-    (dolist (param alist)
-      (modify-frame-parameters frame (list param)))))
-
 (defun md/sf ()
   "Apply small frame settings."
   (interactive)
-  (md/apply-frame-alist md/small-frame-alist))
+  (modify-frame-parameters (selected-frame) md/small-frame-alist))
 (defun md/bf ()
   "Apply big frame settings."
   (interactive)
-  (md/apply-frame-alist md/big-frame-alist))
+  (modify-frame-parameters (selected-frame) md/big-frame-alist))
 (defun md/nf ()
   "Apply narrow frame settings."
   (interactive)
-  (md/apply-frame-alist md/narrow-frame-alist))
+  (modify-frame-parameters (selected-frame) md/narrow-frame-alist))
 
 (defvar md/env-path-sep ":"
   "Separator for entries in the PATH environment variable.")
