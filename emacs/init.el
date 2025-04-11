@@ -31,34 +31,47 @@
   "Apply big frame settings."
   (interactive)
   (md/apply-frame-alist md/big-frame-alist))
+(defun md/nf ()
+  "Apply narrow frame settings."
+  (interactive)
+  (md/apply-frame-alist md/narrow-frame-alist))
 
-;; macos specific settings
+(defvar md/env-path-sep ":"
+  "Separator for entries in the PATH environment variable.")
+
+(defun md/env-path-prepend (path-to-prepend)
+  "Prepend `path-to-prepend` to the PATH environment variable if it's not already present.
+
+This ensures the given directory takes precedence when resolving executables."
+  (let*
+      ((env-path (getenv "PATH"))
+       (paths (split-string env-path md/env-path-sep))
+       (normalized (directory-file-name path-to-prepend))) ;; remove trailing slash
+    (unless (member normalized paths)
+      (setenv "PATH" (concat path-to-prepend md/env-path-sep env-path)))))
+
+(when (not (eq system-type 'windows-nt))
+  (md/env-path-prepend "~/.local/bin"))
+
+;; Macos specific settings
 (when (eq system-type 'darwin) ; macOS
   ;  (setq mac-command-modifier 'meta) ; Command key is Meta
   ;  (setq mac-option-modifier 'super) ; Option key is Super
   (add-to-list 'Info-directory-list "/opt/homebrew/share/info")
   (add-to-list 'Info-directory-list "/opt/homebrew/share/info/emacs")
   (add-to-list 'exec-path "/opt/homebrew/bin")
-  (add-to-list
-   'exec-path "/opt/homebrew/opt/make/libexec/gnubin/make")
-  (let ((texbin-path "/Library/TeX/texbin")
-        (path-sep ":")
-        (env-path (getenv "PATH")))
-    (unless (string-match-p texbin-path env-path)
-      (setenv "PATH" (concat env-path path-sep texbin-path))))
-  (let ((make-path "/opt/homebrew/opt/make/libexec/gnubin")
-        (path-sep ":")
-        (env-path (getenv "PATH")))
-    (unless (string-match-p make-path env-path)
-      (setenv "PATH" (concat make-path path-sep env-path)))))
+  (add-to-list 'exec-path "/opt/homebrew/opt/make/libexec/gnubin")
+  (md/env-path-prepend "/Library/TeX/texbin")
+  (md/env-path-prepend "/opt/homebrew/opt/make/libexec/gnubin")
+  (md/env-path-prepend "/opt/homebrew/opt/llvm/bin"))
 
 ;; keybindings
 (global-set-key (kbd "M-o") 'other-window)
 
 ;; global formatting
-(add-hook 'before-save-hook 'delete-trailing-whitespace
-          'delete-trailing-lines)
+(add-hook 'before-save-hook 'delete-trailing-whitespace 'delete-trailing-lines)
 (setq require-final-newline t)
+(setq-default fill-column 80)
 
 ;; themes
 (md/require-package 'adwaita-dark-theme)
@@ -94,9 +107,7 @@
 (when (eq system-type 'gnu/linux)
   (menu-bar-mode -1))
 (setq column-number-mode t)
-(dolist (hook
-         '(prog-mode-hook
-           conf-mode-hook text-mode-hook Info-mode-hook))
+(dolist (hook '(prog-mode-hook conf-mode-hook text-mode-hook Info-mode-hook))
   (add-hook
    hook
    (lambda ()
@@ -115,8 +126,7 @@
 (add-hook 'emacs-lisp-mode-hook #'elisp-autofmt-mode)
 (add-hook
  'elisp-autofmt-mode-hook
- (lambda ()
-   (add-hook 'before-save-hook #'elisp-autofmt-buffer nil 'local)))
+ (lambda () (add-hook 'before-save-hook #'elisp-autofmt-buffer nil 'local)))
 
 ;; major modes
 (md/require-package 'magit)
@@ -124,10 +134,16 @@
 (add-hook 'prog-mode-hook #'flyspell-prog-mode)
 
 ;; org-mode options
+(md/require-package 'gnuplot)
+(md/require-package 'gnuplot-mode)
 (add-hook 'org-mode-hook #'flyspell-mode)
 (add-hook 'org-mode-hook (lambda () (display-line-numbers-mode 1)))
+(add-hook 'org-mode-hook #'auto-fill-mode)
 (setq org-latex-create-formula-image-program 'dvisvgm)
 (setq org-file-apps '((auto-mode . emacs) ("\\.pdf\\'" . emacs)))
+(global-set-key (kbd "C-c l") #'org-store-link)
+(global-set-key (kbd "C-c a") #'org-agenda)
+(global-set-key (kbd "C-c c") #'org-capture)
 
 ;; obsidian
 ;; only on macOs for now
@@ -151,8 +167,7 @@
 (md/require-package 'pdf-tools)
 (pdf-tools-install)
 (add-to-list 'auto-mode-alist '("\\.pdf\\'" . pdf-view-mode))
-(add-hook
- 'pdf-view-mode-hook (lambda () (display-line-numbers-mode -1)))
+(add-hook 'pdf-view-mode-hook (lambda () (display-line-numbers-mode -1)))
 
 ;; python mode
 (md/require-package 'blacken)
