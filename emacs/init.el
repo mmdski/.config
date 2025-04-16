@@ -68,10 +68,9 @@ This ensures the given directory takes precedence when resolving executables."
 (setq-default fill-column 80)
 
 ;; themes
-(md/require-package 'adwaita-dark-theme)
-(defvar md/light-theme 'adwaita
+(defvar md/light-theme 'modus-operandi
   "Preferred light theme")
-(defvar md/dark-theme 'adwaita-dark
+(defvar md/dark-theme 'modus-vivendi
   "Preferred dark theme")
 
 (load-theme md/dark-theme t)

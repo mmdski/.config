@@ -1,4 +1,4 @@
-theme = Adwaita Dark
+theme = modus-vivendi
 font-family = "Source Code Pro"
 font-size = 14
 quit-after-last-window-closed = true

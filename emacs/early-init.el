@@ -7,6 +7,4 @@
 
 (setq default-frame-alist md/big-frame-alist)
 
-(add-to-list 'default-frame-alist '(z-group . above))
-
 (setq initial-frame-alist default-frame-alist)
