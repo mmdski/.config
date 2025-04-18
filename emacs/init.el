@@ -73,7 +73,7 @@ This ensures the given directory takes precedence when resolving executables."
 (defvar md/dark-theme 'modus-vivendi
   "Preferred dark theme")
 
-(load-theme md/dark-theme t)
+(load-theme md/light-theme t)
 
 (defun md/toggle-theme ()
   "Toggle between light and dark themes."
@@ -134,6 +134,9 @@ This ensures the given directory takes precedence when resolving executables."
 (add-hook 'org-mode-hook #'auto-fill-mode)
 (setq org-latex-create-formula-image-program 'dvisvgm)
 (setq org-file-apps '((auto-mode . emacs) ("\\.pdf\\'" . emacs)))
+(add-to-list
+ 'org-file-apps
+ '("\\.html\\'" . (lambda (file path) (browse-url-default-browser path))))
 (global-set-key (kbd "C-c l") #'org-store-link)
 (global-set-key (kbd "C-c a") #'org-agenda)
 (global-set-key (kbd "C-c c") #'org-capture)
