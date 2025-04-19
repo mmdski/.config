@@ -17,18 +17,32 @@
     (md/package-refresh-contents-once)
     (package-install package)))
 
+(defun md/set-frame-size (frame-alist)
+  "Apply width and height from FRAME-ALIST"
+  (let ((params
+         `((width . ,(cdr (assq 'width frame-alist)))
+           (height . ,(cdr (assq 'height frame-alist))))))
+    (modify-frame-parameters (selected-frame) params)))
+
 (defun md/sf ()
   "Apply small frame settings."
   (interactive)
-  (modify-frame-parameters (selected-frame) md/small-frame-alist))
+  (md/set-frame-size md/small-frame-alist))
 (defun md/bf ()
   "Apply big frame settings."
   (interactive)
-  (modify-frame-parameters (selected-frame) md/big-frame-alist))
+  (md/set-frame-size md/big-frame-alist))
 (defun md/nf ()
   "Apply narrow frame settings."
   (interactive)
-  (modify-frame-parameters (selected-frame) md/narrow-frame-alist))
+  (md/set-frame-size md/narrow-frame-alist))
+(defun md/rp ()
+  "Resets the position of the frame"
+  (interactive)
+  (let ((params
+         `((left . ,(cdr (assq 'left md/big-frame-alist)))
+           (top . ,(cdr (assq 'top md/big-frame-alist))))))
+    (modify-frame-parameters (selected-frame) params)))
 
 (defvar md/env-path-sep ":"
   "Separator for entries in the PATH environment variable.")
@@ -55,12 +69,11 @@ This ensures the given directory takes precedence when resolving executables."
   (add-to-list 'Info-directory-list "/opt/homebrew/share/info/emacs")
   (add-to-list 'exec-path "/opt/homebrew/bin")
   (add-to-list 'exec-path "/opt/homebrew/opt/make/libexec/gnubin")
+  (add-to-list 'exec-path "/usr/local/bin")
   (md/env-path-prepend "/Library/TeX/texbin")
   (md/env-path-prepend "/opt/homebrew/opt/make/libexec/gnubin")
-  (md/env-path-prepend "/opt/homebrew/opt/llvm/bin"))
-
-;; keybindings
-(global-set-key (kbd "M-o") 'other-window)
+  (md/env-path-prepend "/opt/homebrew/opt/llvm/bin")
+  (md/env-path-prepend "/usr/local/bin"))
 
 ;; global formatting
 (add-hook 'before-save-hook 'delete-trailing-whitespace 'delete-trailing-lines)
