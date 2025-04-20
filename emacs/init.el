@@ -140,12 +140,15 @@ This ensures the given directory takes precedence when resolving executables."
 (add-hook 'prog-mode-hook #'flyspell-prog-mode)
 
 ;; org-mode options
+(setq org-directory "~/Documents/org")
 (md/require-package 'gnuplot)
 (md/require-package 'gnuplot-mode)
+(setq org-hide-emphasis-markers t)
 (add-hook 'org-mode-hook #'flyspell-mode)
-(add-hook 'org-mode-hook (lambda () (display-line-numbers-mode 1)))
-(add-hook 'org-mode-hook #'auto-fill-mode)
+(add-hook 'org-mode-hook 'org-indent-mode)
+(add-hook 'org-mode-hook 'visual-line-mode)
 (setq org-latex-create-formula-image-program 'dvisvgm)
+(add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode))
 (setq org-file-apps '((auto-mode . emacs) ("\\.pdf\\'" . emacs)))
 (add-to-list
  'org-file-apps
