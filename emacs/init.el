@@ -70,6 +70,7 @@ This ensures the given directory takes precedence when resolving executables."
   (add-to-list 'exec-path "/opt/homebrew/bin")
   (add-to-list 'exec-path "/opt/homebrew/opt/make/libexec/gnubin")
   (add-to-list 'exec-path "/usr/local/bin")
+  (add-to-list 'exec-path "/Library/TeX/texbin")
   (md/env-path-prepend "/Library/TeX/texbin")
   (md/env-path-prepend "/opt/homebrew/opt/make/libexec/gnubin")
   (md/env-path-prepend "/opt/homebrew/opt/llvm/bin")
@@ -135,6 +136,8 @@ This ensures the given directory takes precedence when resolving executables."
  (lambda () (add-hook 'before-save-hook #'elisp-autofmt-buffer nil 'local)))
 
 ;; major modes
+(require 'xscheme)
+
 (md/require-package 'magit)
 
 (add-hook 'prog-mode-hook #'flyspell-prog-mode)
@@ -148,6 +151,9 @@ This ensures the given directory takes precedence when resolving executables."
 (add-hook 'org-mode-hook 'org-indent-mode)
 (add-hook 'org-mode-hook 'visual-line-mode)
 (setq org-latex-create-formula-image-program 'dvisvgm)
+(with-eval-after-load 'org
+  (setq org-latex-format-options
+        (plist-put org-format-latex-options :scale 1.5)))
 (add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode))
 (setq org-file-apps '((auto-mode . emacs) ("\\.pdf\\'" . emacs)))
 (add-to-list

@@ -5,6 +5,6 @@
 (defvar md/narrow-frame-alist
   '((width . 85) (height . 35) (left . 10) (top . 30)))
 
-(setq default-frame-alist md/big-frame-alist)
+(setq default-frame-alist md/narrow-frame-alist)
 
 (setq initial-frame-alist default-frame-alist)
