@@ -67,14 +67,15 @@ This ensures the given directory takes precedence when resolving executables."
   ;  (setq mac-option-modifier 'super) ; Option key is Super
   (add-to-list 'Info-directory-list "/opt/homebrew/share/info")
   (add-to-list 'Info-directory-list "/opt/homebrew/share/info/emacs")
+  (add-to-list 'exec-path "/usr/local/bin")
   (add-to-list 'exec-path "/opt/homebrew/bin")
   (add-to-list 'exec-path "/opt/homebrew/opt/make/libexec/gnubin")
-  (add-to-list 'exec-path "/usr/local/bin")
   (add-to-list 'exec-path "/Library/TeX/texbin")
-  (md/env-path-prepend "/Library/TeX/texbin")
+  (md/env-path-prepend "/usr/local/bin")
+  (md/env-path-prepend "/opt/homebrew/bin")
   (md/env-path-prepend "/opt/homebrew/opt/make/libexec/gnubin")
   (md/env-path-prepend "/opt/homebrew/opt/llvm/bin")
-  (md/env-path-prepend "/usr/local/bin"))
+  (md/env-path-prepend "/Library/TeX/texbin"))
 
 ;; global formatting
 (add-hook 'before-save-hook 'delete-trailing-whitespace 'delete-trailing-lines)
