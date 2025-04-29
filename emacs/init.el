@@ -61,12 +61,13 @@ This ensures the given directory takes precedence when resolving executables."
 (when (not (eq system-type 'windows-nt))
   (md/env-path-prepend "~/.local/bin"))
 
-;; Macos specific settings
+;; macOS specific settings
 (when (eq system-type 'darwin) ; macOS
   ;  (setq mac-command-modifier 'meta) ; Command key is Meta
   ;  (setq mac-option-modifier 'super) ; Option key is Super
   (add-to-list 'Info-directory-list "/opt/homebrew/share/info")
   (add-to-list 'Info-directory-list "/opt/homebrew/share/info/emacs")
+  (add-to-list 'Info-directory-list (expand-file-name "~/.local/share/info"))
   (add-to-list 'exec-path "/usr/local/bin")
   (add-to-list 'exec-path "/opt/homebrew/bin")
   (add-to-list 'exec-path "/opt/homebrew/opt/make/libexec/gnubin")
@@ -108,6 +109,8 @@ This ensures the given directory takes precedence when resolving executables."
 (setq treesit-auto-install 'prompt)
 (global-treesit-auto-mode)
 
+(display-time)
+
 ;; minor modes
 (tool-bar-mode -1)
 (scroll-bar-mode 0)
@@ -115,7 +118,7 @@ This ensures the given directory takes precedence when resolving executables."
 (when (eq system-type 'gnu/linux)
   (menu-bar-mode -1))
 (setq column-number-mode t)
-(dolist (hook '(prog-mode-hook conf-mode-hook text-mode-hook Info-mode-hook))
+(dolist (hook '(prog-mode-hook conf-mode-hook text-mode-hook))
   (add-hook
    hook
    (lambda ()
@@ -164,7 +167,13 @@ This ensures the given directory takes precedence when resolving executables."
 (global-set-key (kbd "C-c a") #'org-agenda)
 (global-set-key (kbd "C-c c") #'org-capture)
 
-;; obsidian
+;; org-babel
+(load (expand-file-name "ob-racket.el" user-emacs-directory))
+(require 'ob-racket)
+(with-eval-after-load 'org
+  (org-babel-do-load-languages 'org-babel-load-languages '((racket . t))))
+
+;; Obsidian
 ;; only on macOs for now
 ;; Location of obsidian vault
 ;; (when (eq system-type 'darwin)

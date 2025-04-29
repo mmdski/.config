@@ -5,6 +5,7 @@
 !emacs/
 !emacs/init.el
 !emacs/early-init.el
+!emacs/ob-racket.el
 
 !ghostty/
 !ghostty/config
