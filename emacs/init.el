@@ -37,7 +37,7 @@
   (interactive)
   (md/set-frame-size md/narrow-frame-alist))
 (defun md/rp ()
-  "Resets the position of the frame"
+  "Reset the position of the frame."
   (interactive)
   (let ((params
          `((left . ,(cdr (assq 'left md/big-frame-alist)))
@@ -48,7 +48,7 @@
   "Separator for entries in the PATH environment variable.")
 
 (defun md/env-path-prepend (path-to-prepend)
-  "Prepend `path-to-prepend` to the PATH environment variable if it's not already present.
+  "Prepend PATH-TO-PREPEND to the PATH environment variable present.
 
 This ensures the given directory takes precedence when resolving executables."
   (let*
@@ -85,9 +85,9 @@ This ensures the given directory takes precedence when resolving executables."
 
 ;; themes
 (defvar md/light-theme 'modus-operandi
-  "Preferred light theme")
+  "Preferred light theme.")
 (defvar md/dark-theme 'modus-vivendi
-  "Preferred dark theme")
+  "Preferred dark theme.")
 
 (load-theme md/light-theme t)
 
@@ -197,15 +197,43 @@ This ensures the given directory takes precedence when resolving executables."
 (add-to-list 'auto-mode-alist '("\\.pdf\\'" . pdf-view-mode))
 (add-hook 'pdf-view-mode-hook (lambda () (display-line-numbers-mode -1)))
 
-;; python mode
-(md/require-package 'blacken)
-(add-hook 'python-mode-hook 'blacken-mode)
-(add-hook 'python-mode-hook #'eglot-ensure)
-(add-hook 'python-ts-mode-hook 'blacken-mode)
-(add-hook 'python-ts-mode-hook #'eglot-ensure)
+;; Core IDE tooling
+(dolist (pkg '(lsp-mode lsp-ui flycheck company))
+  (md/require-package pkg))
+
+(require 'lsp-mode)
+(require 'lsp-ui)
+(require 'flycheck)
+(require 'company)
+
+(add-hook 'after-init-hook #'global-company-mode)
+(add-hook 'after-init-hook #'global-flycheck-mode)
+(add-hook 'lsp-mode-hook #'lsp-ui-mode)
+
+(setq lsp-ui-doc-show-with-cursor t)
+(setq lsp-ui-doc-delay 0.5)
+(setq lsp-ui-sideline-show-hover t)
+
+;; Python-specific setup
+(dolist (pkg '(pyvenv blacken))
+  (md/require-package pkg))
+
+(require 'pyvenv)
+(pyvenv-mode 1)
+
+(require 'blacken)
+
+(defun md/python-setup ()
+  (lsp)
+  (blacken-mode))
+
+(add-hook 'python-mode-hook #'md/python-setup)
+(add-hook 'python-ts-mode-hook #'md/python-setup)
 
 (when (not (eq system-type 'windows-nt))
   (md/require-package 'vterm))
 
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
 (load custom-file 'noerror)
+(provide 'init)
+;;; init.el ends here
