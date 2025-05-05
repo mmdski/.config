@@ -59,7 +59,7 @@ This ensures the given directory takes precedence when resolving executables."
       (setenv "PATH" (concat path-to-prepend md/env-path-sep env-path)))))
 
 (when (not (eq system-type 'windows-nt))
-  (md/env-path-prepend "~/.local/bin"))
+  (md/env-path-prepend (expand-file-name "~/.local/bin")))
 
 ;; macOS specific settings
 (when (eq system-type 'darwin) ; macOS
@@ -155,6 +155,8 @@ This ensures the given directory takes precedence when resolving executables."
 (add-hook 'org-mode-hook 'org-indent-mode)
 (add-hook 'org-mode-hook 'visual-line-mode)
 (setq org-latex-create-formula-image-program 'dvisvgm)
+(setq org-list-allow-alphabetical t)
+(setq org-log-done t)
 (with-eval-after-load 'org
   (setq org-latex-format-options
         (plist-put org-format-latex-options :scale 1.5)))
@@ -168,10 +170,8 @@ This ensures the given directory takes precedence when resolving executables."
 (global-set-key (kbd "C-c c") #'org-capture)
 
 ;; org-babel
-(load (expand-file-name "ob-racket.el" user-emacs-directory))
-(require 'ob-racket)
 (with-eval-after-load 'org
-  (org-babel-do-load-languages 'org-babel-load-languages '((racket . t))))
+  (org-babel-do-load-languages 'org-babel-load-languages '((python . t))))
 
 ;; Obsidian
 ;; only on macOs for now
