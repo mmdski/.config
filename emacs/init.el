@@ -168,10 +168,21 @@ This ensures the given directory takes precedence when resolving executables."
 (global-set-key (kbd "C-c l") #'org-store-link)
 (global-set-key (kbd "C-c a") #'org-agenda)
 (global-set-key (kbd "C-c c") #'org-capture)
+(defun org-summary-todo (n-done n-not-done)
+  "Switch entry to DONE when all subentries are done, to TODO otherwise."
+  (let (org-log-done
+        org-todo-log-states) ; turn off logging
+    (org-todo
+     (if (= n-not-done 0)
+         "DONE"
+       "TODO"))))
+
+(add-hook 'org-after-todo-statistics-hook #'org-summary-todo)
 
 ;; org-babel
 (with-eval-after-load 'org
-  (org-babel-do-load-languages 'org-babel-load-languages '((python . t))))
+  (org-babel-do-load-languages
+   'org-babel-load-languages '((emacs-lisp . t) (python . t))))
 
 ;; Obsidian
 ;; only on macOs for now
