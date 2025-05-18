@@ -58,6 +58,10 @@ This ensures the given directory takes precedence when resolving executables."
     (unless (member normalized paths)
       (setenv "PATH" (concat path-to-prepend md/env-path-sep env-path)))))
 
+(md/require-package 'exec-path-from-shell)
+(require 'exec-path-from-shell)
+(exec-path-from-shell-initialize)
+
 (when (not (eq system-type 'windows-nt))
   (md/env-path-prepend (expand-file-name "~/.local/bin")))
 
@@ -180,9 +184,10 @@ This ensures the given directory takes precedence when resolving executables."
 (add-hook 'org-after-todo-statistics-hook #'org-summary-todo)
 
 ;; org-babel
+(require 'ob-C)
 (with-eval-after-load 'org
   (org-babel-do-load-languages
-   'org-babel-load-languages '((emacs-lisp . t) (python . t))))
+   'org-babel-load-languages '((emacs-lisp . t) (python . t) (C . t))))
 
 ;; Obsidian
 ;; only on macOs for now
@@ -240,6 +245,35 @@ This ensures the given directory takes precedence when resolving executables."
 
 (add-hook 'python-mode-hook #'md/python-setup)
 (add-hook 'python-ts-mode-hook #'md/python-setup)
+
+;; Rust-specific setup
+(md/require-package 'helm-ag) ; for rust docs
+(md/require-package 'rustic)
+(md/require-package 'yasnippet)
+(require 'rustic)
+(setq rustic-lsp-client 'lsp-mode)
+(setq rustic-format-on-save t)
+(md/env-path-prepend (expand-file-name "~/.cargo/bin"))
+(defun rustic-mode-auto-save-hook ()
+  "Enable auto-saving in rustic-mode buffers."
+  (when buffer-file-name
+    (setq-local compilation-ask-about-save nil)))
+(add-hook 'rustic-mode-hook #'lsp)
+(add-hook 'rustic-mode-hook 'rustic-mode-auto-save-hook)
+(with-eval-after-load 'lsp-mode
+  (add-to-list 'lsp-language-id-configuration '(rustic-mode . "rust"))
+  (lsp-register-client
+   (make-lsp-client
+    :new-connection
+    (lsp-stdio-connection '("rust-analyzer"))
+    :major-modes '(rustic-mode)
+    :server-id 'rust-analyzer)))
+(with-eval-after-load 'project
+  (add-to-list
+   'project-find-functions
+   (lambda (dir)
+     (when-let ((root (locate-dominating-file dir "Cargo.toml")))
+       (cons 'transient root)))))
 
 (when (not (eq system-type 'windows-nt))
   (md/require-package 'vterm))
