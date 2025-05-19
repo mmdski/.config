@@ -214,13 +214,14 @@ This ensures the given directory takes precedence when resolving executables."
 (add-hook 'pdf-view-mode-hook (lambda () (display-line-numbers-mode -1)))
 
 ;; Core IDE tooling
-(dolist (pkg '(lsp-mode lsp-ui flycheck company))
+(dolist (pkg '(lsp-mode lsp-ui flycheck company projectile))
   (md/require-package pkg))
 
 (require 'lsp-mode)
 (require 'lsp-ui)
 (require 'flycheck)
 (require 'company)
+(require 'projectile)
 
 (add-hook 'after-init-hook #'global-company-mode)
 (add-hook 'after-init-hook #'global-flycheck-mode)
@@ -229,6 +230,10 @@ This ensures the given directory takes precedence when resolving executables."
 (setq lsp-ui-doc-show-with-cursor t)
 (setq lsp-ui-doc-delay 0.5)
 (setq lsp-ui-sideline-show-hover t)
+
+(projectile-mode +1)
+(setq projectile-enable-caching t)
+(global-set-key (kbd "C-c p") 'projectile-command-map)
 
 ;; Python-specific setup
 (dolist (pkg '(pyvenv blacken))
@@ -261,19 +266,21 @@ This ensures the given directory takes precedence when resolving executables."
 (add-hook 'rustic-mode-hook #'lsp)
 (add-hook 'rustic-mode-hook 'rustic-mode-auto-save-hook)
 (with-eval-after-load 'lsp-mode
+  (setq lsp-rust-analyzer-cargo-extra-env nil) ;; suppress the sequence warning
+
   (add-to-list 'lsp-language-id-configuration '(rustic-mode . "rust"))
+
   (lsp-register-client
    (make-lsp-client
-    :new-connection
-    (lsp-stdio-connection '("rust-analyzer"))
+    :new-connection (lsp-stdio-connection '("rust-analyzer"))
     :major-modes '(rustic-mode)
-    :server-id 'rust-analyzer)))
-(with-eval-after-load 'project
-  (add-to-list
-   'project-find-functions
-   (lambda (dir)
-     (when-let ((root (locate-dominating-file dir "Cargo.toml")))
-       (cons 'transient root)))))
+    :server-id 'rust-analyzer
+    :initialization-options
+    (lambda ()
+      ;; Don't pass extraEnv at all
+      (ht ("cargo" (ht)))))))
+(setq projectile-project-root-files-bottom-up
+      (append '("Cargo.toml") projectile-project-root-files-bottom-up))
 
 (when (not (eq system-type 'windows-nt))
   (md/require-package 'vterm))
