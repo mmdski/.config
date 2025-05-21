@@ -188,6 +188,9 @@ This ensures the given directory takes precedence when resolving executables."
 (with-eval-after-load 'org
   (org-babel-do-load-languages
    'org-babel-load-languages '((emacs-lisp . t) (python . t) (C . t))))
+(defun md/org-confirm-babel-evaluate (lang body)
+  (not (string= lang "C")))
+(setq org-confirm-babel-evaluate #'md/org-confirm-babel-evaluate)
 
 ;; Obsidian
 ;; only on macOs for now
