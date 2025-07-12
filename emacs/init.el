@@ -112,7 +112,10 @@ This ensures the given directory takes precedence when resolving executables."
 
 (setq treesit-auto-install 'prompt)
 (global-treesit-auto-mode)
-
+(add-to-list
+ 'treesit-language-source-alist
+ '(julia "https://github.com/tree-sitter/tree-sitter-julia"))
+(treesit-install-language-grammar 'julia)
 (display-time)
 
 ;; minor modes
@@ -180,17 +183,23 @@ This ensures the given directory takes precedence when resolving executables."
      (if (= n-not-done 0)
          "DONE"
        "TODO"))))
-
+(setq org-startup-with-inline-images t)
 (add-hook 'org-after-todo-statistics-hook #'org-summary-todo)
+(add-hook 'org-babel-after-execute-hook 'org-redisplay-inline-images)
 
 ;; org-babel
 (require 'ob-C)
+; (md/require-package 'ob-julia)
+(require 'ob-julia)
 (with-eval-after-load 'org
   (org-babel-do-load-languages
-   'org-babel-load-languages '((emacs-lisp . t) (python . t) (C . t))))
+   'org-babel-load-languages
+   '((emacs-lisp . t) (python . t) (C . t) (julia .t))))
 (defun md/org-confirm-babel-evaluate (lang body)
-  (not (string= lang "C")))
+  (not (member lang '("C" "python"))))
 (setq org-confirm-babel-evaluate #'md/org-confirm-babel-evaluate)
+(setq org-babel-default-header-args:python
+      '((:results . "output graphics") (:session . "py") (:exports . "both")))
 
 ;; Obsidian
 ;; only on macOs for now
