@@ -112,10 +112,7 @@ This ensures the given directory takes precedence when resolving executables."
 
 (setq treesit-auto-install 'prompt)
 (global-treesit-auto-mode)
-(add-to-list
- 'treesit-language-source-alist
- '(julia "https://github.com/tree-sitter/tree-sitter-julia"))
-(treesit-install-language-grammar 'julia)
+
 (display-time)
 
 ;; minor modes
@@ -189,14 +186,14 @@ This ensures the given directory takes precedence when resolving executables."
 
 ;; org-babel
 (require 'ob-C)
-; (md/require-package 'ob-julia)
 (require 'ob-julia)
+
 (with-eval-after-load 'org
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((emacs-lisp . t) (python . t) (C . t) (julia .t))))
 (defun md/org-confirm-babel-evaluate (lang body)
-  (not (member lang '("C" "python"))))
+  (not (member lang '("C" "python" "julia"))))
 (setq org-confirm-babel-evaluate #'md/org-confirm-babel-evaluate)
 (setq org-babel-default-header-args:python
       '((:results . "output graphics") (:session . "py") (:exports . "both")))
@@ -246,6 +243,24 @@ This ensures the given directory takes precedence when resolving executables."
 (projectile-mode +1)
 (setq projectile-enable-caching t)
 (global-set-key (kbd "C-c p") 'projectile-command-map)
+
+;; Julia-specific setup
+(defun md/julia-setup ()
+  (lsp)) ;; assumes lsp-mode already installed and loaded
+
+(md/require-package 'julia-mode)
+
+(add-hook 'julia-mode-hook #'md/julia-setup)
+(setq lsp-julia-command '("julia"))
+(md/require-package 'julia-repl)
+
+(add-hook 'julia-mode-hook #'julia-repl-mode)
+
+(setq julia-repl-executable-records '((default "julia")))
+
+(md/require-package 'format-all)
+
+(add-hook 'julia-mode-hook #'format-all-mode)
 
 ;; Python-specific setup
 (dolist (pkg '(pyvenv blacken))
