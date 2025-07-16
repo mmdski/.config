@@ -117,8 +117,8 @@ This ensures the given directory takes precedence when resolving executables."
 
 ;; minor modes
 (tool-bar-mode -1)
-(scroll-bar-mode 0)
-(blink-cursor-mode 0)
+(scroll-bar-mode -1)
+(blink-cursor-mode -1)
 (when (eq system-type 'gnu/linux)
   (menu-bar-mode -1))
 (setq column-number-mode t)
@@ -198,16 +198,6 @@ This ensures the given directory takes precedence when resolving executables."
 (setq org-babel-default-header-args:python
       '((:results . "output graphics") (:session . "py") (:exports . "both")))
 
-;; Obsidian
-;; only on macOs for now
-;; Location of obsidian vault
-;; (when (eq system-type 'darwin)
-;;   (require 'obsidian)
-;;   (setopt obsidian-directory "~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Toha Heavy Industries")
-;;   (setopt obsidian-inbox-directory "Notes")
-;;   (setopt markdown-enable-wiki-links t)
-;;   (global-obsidian-mode t))
-
 ;; toml-ts-mode
 (add-to-list 'auto-mode-alist '("\\.toml\\'" . toml-ts-mode))
 (add-hook 'toml-mode-hook #'flyspell-mode)
@@ -223,14 +213,13 @@ This ensures the given directory takes precedence when resolving executables."
 (add-hook 'pdf-view-mode-hook (lambda () (display-line-numbers-mode -1)))
 
 ;; Core IDE tooling
-(dolist (pkg '(lsp-mode lsp-ui flycheck company projectile))
+(dolist (pkg '(lsp-mode lsp-ui flycheck company))
   (md/require-package pkg))
 
 (require 'lsp-mode)
 (require 'lsp-ui)
 (require 'flycheck)
 (require 'company)
-(require 'projectile)
 
 (add-hook 'after-init-hook #'global-company-mode)
 (add-hook 'after-init-hook #'global-flycheck-mode)
@@ -239,10 +228,6 @@ This ensures the given directory takes precedence when resolving executables."
 (setq lsp-ui-doc-show-with-cursor t)
 (setq lsp-ui-doc-delay 0.5)
 (setq lsp-ui-sideline-show-hover t)
-
-(projectile-mode +1)
-(setq projectile-enable-caching t)
-(global-set-key (kbd "C-c p") 'projectile-command-map)
 
 ;; Julia-specific setup
 (defun md/julia-setup ()
@@ -277,37 +262,6 @@ This ensures the given directory takes precedence when resolving executables."
 
 (add-hook 'python-mode-hook #'md/python-setup)
 (add-hook 'python-ts-mode-hook #'md/python-setup)
-
-;; Rust-specific setup
-(md/require-package 'helm-ag) ; for rust docs
-(md/require-package 'rustic)
-(md/require-package 'yasnippet)
-(require 'rustic)
-(setq rustic-lsp-client 'lsp-mode)
-(setq rustic-format-on-save t)
-(md/env-path-prepend (expand-file-name "~/.cargo/bin"))
-(defun rustic-mode-auto-save-hook ()
-  "Enable auto-saving in rustic-mode buffers."
-  (when buffer-file-name
-    (setq-local compilation-ask-about-save nil)))
-(add-hook 'rustic-mode-hook #'lsp)
-(add-hook 'rustic-mode-hook 'rustic-mode-auto-save-hook)
-(with-eval-after-load 'lsp-mode
-  (setq lsp-rust-analyzer-cargo-extra-env nil) ;; suppress the sequence warning
-
-  (add-to-list 'lsp-language-id-configuration '(rustic-mode . "rust"))
-
-  (lsp-register-client
-   (make-lsp-client
-    :new-connection (lsp-stdio-connection '("rust-analyzer"))
-    :major-modes '(rustic-mode)
-    :server-id 'rust-analyzer
-    :initialization-options
-    (lambda ()
-      ;; Don't pass extraEnv at all
-      (ht ("cargo" (ht)))))))
-(setq projectile-project-root-files-bottom-up
-      (append '("Cargo.toml") projectile-project-root-files-bottom-up))
 
 (when (not (eq system-type 'windows-nt))
   (md/require-package 'vterm))
