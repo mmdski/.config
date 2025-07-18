@@ -1,69 +1,150 @@
-(require 'package)
-(setq package-archives
-      '(("gnu" . "https://elpa.gnu.org/packages/")
-        ("melpa" . "https://melpa.org/packages/")))
-(package-initialize)
+;;; init.el --- Crafted Emacs -*- lexical-binding: t; -*-
 
-;; from tsoding's rc.el
-(defvar md/package-contents-refreshed nil)
-(defun md/package-refresh-contents-once ()
-  "Refreshes package contents once per session."
-  (when (not md/package-contents-refreshed)
-    (setq md/package-contents-refreshed t)
-    (package-refresh-contents)))
+;;; Commentary:
 
-(defun md/require-package (package)
-  (when (not (package-installed-p package))
-    (md/package-refresh-contents-once)
-    (package-install package)))
+;;; Code:
 
-(defun md/set-frame-size (frame-alist)
-  "Apply width and height from FRAME-ALIST"
+;;; begin crafted Emacs setup
+
+;;; Initial phase
+
+;; Load the custom file if it exists.  Among other settings, this will
+;; have the list `package-selected-packages', so we need to load that
+;; before adding more packages.  The value of the `custom-file'
+;; variable must be set appropriately, by default the value is nil.
+;; This can be done here, or in the early-init.el file.
+(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+(when (and custom-file (file-exists-p custom-file))
+  (load custom-file nil :nomessage))
+
+;; Bootstrap crafted-emacs in init.el
+;; Adds crafted-emacs modules to the `load-path', sets up a module
+;; writing template, sets the `crafted-emacs-home' variable.
+(load
+ (expand-file-name "crafted-emacs/modules/crafted-init-config"
+                   user-emacs-directory))
+
+;;; Packages phase
+;; Collect list of packages to install.
+
+;; add crafted-ui package definitions to selected packages list
+(require 'crafted-ui-packages)
+
+;; Add package definitions for completion packages
+;; to `package-selected-packages'.
+(require 'crafted-completion-packages)
+
+;; add crafted-ide package definitions to selected packages list
+(require 'crafted-ide-packages)
+(add-to-list 'package-selected-packages 'magit) ; considered "ide stuff"
+(add-to-list 'package-selected-packages 'julia-mode)
+(add-to-list 'package-selected-packages 'eglot-jl)
+(add-to-list 'package-selected-packages 'julia-formatter)
+
+;; add crafted-lisp package definitions to selected packages list
+;; currently not working for mit-scheme
+;; (require 'crafted-lisp-packages)
+;; (add-to-list 'package-selected-packages 'geiser-mit)
+(add-to-list 'package-selected-packages 'elisp-autofmt)
+
+;; add crafted-org package definitions to selected packages list
+(require 'crafted-org-packages)
+
+;; add crafted-writing package definitions to selected packages list
+(require 'crafted-writing-packages)
+(add-to-list 'package-selected-packages 'pdf-tools)
+
+;; Install the packages listed in the `package-selected-packages' list.
+(package-install-selected-packages :noconfirm)
+
+;;; Configuration phase
+
+(setq ispell-personal-dictionary (expand-file-name "aspell/.aspell.en.pws"))
+
+;; Load crafted-defaults configuration
+(require 'crafted-defaults-config)
+
+;; Load crafted-ui configuration
+(require 'crafted-ui-config)
+
+;; Load configuration for the completion module
+(require 'crafted-completion-config)
+
+;; Load crafted-speedbar configuration
+(require 'crafted-speedbar-config)
+
+;; Load crafted-ide configuration
+(require 'crafted-ide-config)
+(crafted-ide-eglot-auto-ensure-all)
+(crafted-ide-configure-tree-sitter '(toml python))
+(add-hook 'prog-mode-hook #'flyspell-prog-mode)
+
+;; Load crafted-lisp configuration
+;; not workign for mit-scheme
+;; (require 'crafted-lisp-config)
+(add-hook 'emacs-lisp-mode-hook #'elisp-autofmt-mode)
+(add-hook
+ 'elisp-autofmt-mode-hook
+ (lambda () (add-hook 'before-save-hook #'elisp-autofmt-buffer nil 'local)))
+(customize-set-variable 'scheme-program-name "scheme")
+(require 'xscheme)
+
+;; Load crafted-updates configuration
+(require 'crafted-updates-config)
+
+;; Load crafted-org configuration
+(require 'crafted-org-config)
+(add-hook 'org-mode-hook #'flyspell-mode)
+
+;; Load crafted-writing configuration
+(require 'crafted-writing-config)
+(add-hook 'text-mode-hook #'flysepll-mode)
+
+;; end crafted emacs setup
+
+(defun md-set-frame-size (frame-alist)
+  "Apply width and height from FRAME-ALIST."
   (let ((params
          `((width . ,(cdr (assq 'width frame-alist)))
            (height . ,(cdr (assq 'height frame-alist))))))
     (modify-frame-parameters (selected-frame) params)))
 
-(defun md/sf ()
+(defun md-sf ()
   "Apply small frame settings."
   (interactive)
-  (md/set-frame-size md/small-frame-alist))
-(defun md/bf ()
+  (md-set-frame-size md-small-frame-alist))
+(defun md-bf ()
   "Apply big frame settings."
   (interactive)
-  (md/set-frame-size md/big-frame-alist))
-(defun md/nf ()
+  (md-set-frame-size md-big-frame-alist))
+(defun md-nf ()
   "Apply narrow frame settings."
   (interactive)
-  (md/set-frame-size md/narrow-frame-alist))
-(defun md/rp ()
+  (md-set-frame-size md-narrow-frame-alist))
+(defun md-rp ()
   "Reset the position of the frame."
   (interactive)
   (let ((params
-         `((left . ,(cdr (assq 'left md/big-frame-alist)))
-           (top . ,(cdr (assq 'top md/big-frame-alist))))))
+         `((left . ,(cdr (assq 'left md-big-frame-alist)))
+           (top . ,(cdr (assq 'top md-big-frame-alist))))))
     (modify-frame-parameters (selected-frame) params)))
 
-(defvar md/env-path-sep ":"
+(defvar md-env-path-sep ":"
   "Separator for entries in the PATH environment variable.")
 
-(defun md/env-path-prepend (path-to-prepend)
+(defun md-env-path-prepend (path-to-prepend)
   "Prepend PATH-TO-PREPEND to the PATH environment variable present.
 
 This ensures the given directory takes precedence when resolving executables."
   (let*
       ((env-path (getenv "PATH"))
-       (paths (split-string env-path md/env-path-sep))
+       (paths (split-string env-path md-env-path-sep))
        (normalized (directory-file-name path-to-prepend))) ;; remove trailing slash
     (unless (member normalized paths)
-      (setenv "PATH" (concat path-to-prepend md/env-path-sep env-path)))))
-
-(md/require-package 'exec-path-from-shell)
-(require 'exec-path-from-shell)
-(exec-path-from-shell-initialize)
+      (setenv "PATH" (concat path-to-prepend md-env-path-sep env-path)))))
 
 (when (not (eq system-type 'windows-nt))
-  (md/env-path-prepend (expand-file-name "~/.local/bin")))
+  (md-env-path-prepend (expand-file-name "~/.local/bin")))
 
 ;; macOS specific settings
 (when (eq system-type 'darwin) ; macOS
@@ -76,49 +157,33 @@ This ensures the given directory takes precedence when resolving executables."
   (add-to-list 'exec-path "/opt/homebrew/bin")
   (add-to-list 'exec-path "/opt/homebrew/opt/make/libexec/gnubin")
   (add-to-list 'exec-path "/Library/TeX/texbin")
-  (md/env-path-prepend "/usr/local/bin")
-  (md/env-path-prepend "/opt/homebrew/bin")
-  (md/env-path-prepend "/opt/homebrew/opt/make/libexec/gnubin")
-  (md/env-path-prepend "/opt/homebrew/opt/llvm/bin")
-  (md/env-path-prepend "/Library/TeX/texbin"))
+  (md-env-path-prepend "/usr/local/bin")
+  (md-env-path-prepend "/opt/homebrew/bin")
+  (md-env-path-prepend "/opt/homebrew/opt/make/libexec/gnubin")
+  (md-env-path-prepend "/opt/homebrew/opt/llvm/bin")
+  (md-env-path-prepend "/Library/TeX/texbin"))
 
 ;; global formatting
 (add-hook 'before-save-hook 'delete-trailing-whitespace 'delete-trailing-lines)
 (setq require-final-newline t)
 (setq-default fill-column 80)
 
-;; themes
-(defvar md/light-theme 'modus-operandi
-  "Preferred light theme.")
-(defvar md/dark-theme 'modus-vivendi
-  "Preferred dark theme.")
-
-(load-theme md/light-theme t)
-
-(defun md/toggle-theme ()
-  "Toggle between light and dark themes."
-  (interactive)
-  (let ((current-theme (car custom-enabled-themes)))
-    (mapc #'disable-theme custom-enabled-themes)
-    (if (eq current-theme md/light-theme)
-        (load-theme md/dark-theme t)
-      (load-theme md/light-theme t))))
-
+(load-theme 'modus-operandi t)
 (add-to-list 'default-frame-alist '(font . "Source Code Pro-14"))
 
-;; tressitter
-(md/require-package 'treesit-auto)
-(require 'treesit-auto)
-
-(setq treesit-auto-install 'prompt)
-(global-treesit-auto-mode)
-
 (display-time)
-
-;; minor modes
 (tool-bar-mode -1)
 (scroll-bar-mode -1)
 (blink-cursor-mode -1)
+(setq-default
+ line-spacing 2
+ truncate-lines t
+ inhibit-splash-screen t)
+(setq ring-bell-function 'ignore)
+
+;; Don't pop up UI dialogs when prompting
+(setq use-dialog-box nil)
+
 (when (eq system-type 'gnu/linux)
   (menu-bar-mode -1))
 (setq column-number-mode t)
@@ -128,145 +193,7 @@ This ensures the given directory takes precedence when resolving executables."
    (lambda ()
      (setq display-line-numbers-type 'relative)
      (display-line-numbers-mode t))))
-(setq ispell-program-name "aspell")
-(setq-default
- line-spacing 2
- truncate-lines t
- inhibit-splash-screen t)
-(setq ring-bell-function 'ignore)
-(delete-selection-mode t)
 
-;; elisp-autofmt
-(md/require-package 'elisp-autofmt)
-(add-hook 'emacs-lisp-mode-hook #'elisp-autofmt-mode)
-(add-hook
- 'elisp-autofmt-mode-hook
- (lambda () (add-hook 'before-save-hook #'elisp-autofmt-buffer nil 'local)))
-
-;; major modes
-(require 'xscheme)
-
-(md/require-package 'magit)
-
-(add-hook 'prog-mode-hook #'flyspell-prog-mode)
-
-;; org-mode options
-(setq org-directory "~/Documents/org")
-(md/require-package 'gnuplot)
-(md/require-package 'gnuplot-mode)
-(setq org-hide-emphasis-markers t)
-(add-hook 'org-mode-hook #'flyspell-mode)
-(add-hook 'org-mode-hook 'org-indent-mode)
-(add-hook 'org-mode-hook 'visual-line-mode)
-(setq org-latex-create-formula-image-program 'dvisvgm)
-(setq org-list-allow-alphabetical t)
-(setq org-log-done t)
-(with-eval-after-load 'org
-  (setq org-latex-format-options
-        (plist-put org-format-latex-options :scale 1.5)))
-(add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode))
-(setq org-file-apps '((auto-mode . emacs) ("\\.pdf\\'" . emacs)))
-(add-to-list
- 'org-file-apps
- '("\\.html\\'" . (lambda (file path) (browse-url-default-browser path))))
-(global-set-key (kbd "C-c l") #'org-store-link)
-(global-set-key (kbd "C-c a") #'org-agenda)
-(global-set-key (kbd "C-c c") #'org-capture)
-(defun org-summary-todo (n-done n-not-done)
-  "Switch entry to DONE when all subentries are done, to TODO otherwise."
-  (let (org-log-done
-        org-todo-log-states) ; turn off logging
-    (org-todo
-     (if (= n-not-done 0)
-         "DONE"
-       "TODO"))))
-(setq org-startup-with-inline-images t)
-(add-hook 'org-after-todo-statistics-hook #'org-summary-todo)
-(add-hook 'org-babel-after-execute-hook 'org-redisplay-inline-images)
-
-;; org-babel
-(require 'ob-C)
-(require 'ob-julia)
-
-(with-eval-after-load 'org
-  (org-babel-do-load-languages
-   'org-babel-load-languages
-   '((emacs-lisp . t) (python . t) (C . t) (julia .t))))
-(defun md/org-confirm-babel-evaluate (lang body)
-  (not (member lang '("C" "python" "julia"))))
-(setq org-confirm-babel-evaluate #'md/org-confirm-babel-evaluate)
-(setq org-babel-default-header-args:python
-      '((:results . "output graphics") (:session . "py") (:exports . "both")))
-
-;; toml-ts-mode
-(add-to-list 'auto-mode-alist '("\\.toml\\'" . toml-ts-mode))
-(add-hook 'toml-mode-hook #'flyspell-mode)
-(add-hook 'toml-ts-mode-hook #'flyspell-mode)
-
-(setq dired-listing-switches "-alh")
-
-(setq doc-view-resolution 300)
-
-(md/require-package 'pdf-tools)
-(pdf-tools-install)
-(add-to-list 'auto-mode-alist '("\\.pdf\\'" . pdf-view-mode))
-(add-hook 'pdf-view-mode-hook (lambda () (display-line-numbers-mode -1)))
-
-;; Core IDE tooling
-(dolist (pkg '(lsp-mode lsp-ui flycheck company))
-  (md/require-package pkg))
-
-(require 'lsp-mode)
-(require 'lsp-ui)
-(require 'flycheck)
-(require 'company)
-
-(add-hook 'after-init-hook #'global-company-mode)
-(add-hook 'after-init-hook #'global-flycheck-mode)
-(add-hook 'lsp-mode-hook #'lsp-ui-mode)
-
-(setq lsp-ui-doc-show-with-cursor t)
-(setq lsp-ui-doc-delay 0.5)
-(setq lsp-ui-sideline-show-hover t)
-
-;; Julia-specific setup
-(defun md/julia-setup ()
-  (lsp)) ;; assumes lsp-mode already installed and loaded
-
-(md/require-package 'julia-mode)
-
-(add-hook 'julia-mode-hook #'md/julia-setup)
-(setq lsp-julia-command '("julia"))
-(md/require-package 'julia-repl)
-
-(add-hook 'julia-mode-hook #'julia-repl-mode)
-
-(setq julia-repl-executable-records '((default "julia")))
-
-(md/require-package 'format-all)
-
-(add-hook 'julia-mode-hook #'format-all-mode)
-
-;; Python-specific setup
-(dolist (pkg '(pyvenv blacken))
-  (md/require-package pkg))
-
-(require 'pyvenv)
-(pyvenv-mode 1)
-
-(require 'blacken)
-
-(defun md/python-setup ()
-  (lsp)
-  (blacken-mode))
-
-(add-hook 'python-mode-hook #'md/python-setup)
-(add-hook 'python-ts-mode-hook #'md/python-setup)
-
-(when (not (eq system-type 'windows-nt))
-  (md/require-package 'vterm))
-
-(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
-(load custom-file 'noerror)
+;;; _
 (provide 'init)
 ;;; init.el ends here
