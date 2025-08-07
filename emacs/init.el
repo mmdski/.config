@@ -30,6 +30,8 @@
 ;; add crafted-ui package definitions to selected packages list
 (require 'crafted-ui-packages)
 
+(add-to-list 'package-selected-packages 'nov)
+
 ;; Add package definitions for completion packages
 ;; to `package-selected-packages'.
 (require 'crafted-completion-packages)
@@ -39,16 +41,17 @@
 (add-to-list 'package-selected-packages 'magit) ; considered "ide stuff"
 (add-to-list 'package-selected-packages 'julia-mode)
 (add-to-list 'package-selected-packages 'eglot-jl)
-(add-to-list 'package-selected-packages 'julia-formatter)
+(add-to-list 'package-selected-packages 'julia-repl)
 
 ;; add crafted-lisp package definitions to selected packages list
-;; currently not working for mit-scheme
 ;; (require 'crafted-lisp-packages)
-;; (add-to-list 'package-selected-packages 'geiser-mit)
 (add-to-list 'package-selected-packages 'elisp-autofmt)
+(add-to-list 'package-selected-packages 'paredit)
 
 ;; add crafted-org package definitions to selected packages list
 (require 'crafted-org-packages)
+(add-to-list 'package-selected-packages 'ess)
+(add-to-list 'package-selected-packages 'ob-julia)
 
 ;; add crafted-writing package definitions to selected packages list
 (require 'crafted-writing-packages)
@@ -59,7 +62,8 @@
 
 ;;; Configuration phase
 
-(setq ispell-personal-dictionary (expand-file-name "aspell/.aspell.en.pws"))
+(setq ispell-personal-dictionary
+      (expand-file-name "aspell/.aspell.en.pws" user-emacs-directory))
 
 ;; Load crafted-defaults configuration
 (require 'crafted-defaults-config)
@@ -67,8 +71,11 @@
 ;; Load crafted-ui configuration
 (require 'crafted-ui-config)
 
+(add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode))
+
 ;; Load configuration for the completion module
 (require 'crafted-completion-config)
+(keymap-unset corfu-map "RET")
 
 ;; Load crafted-speedbar configuration
 (require 'crafted-speedbar-config)
@@ -78,27 +85,125 @@
 (crafted-ide-eglot-auto-ensure-all)
 (crafted-ide-configure-tree-sitter '(toml python))
 (add-hook 'prog-mode-hook #'flyspell-prog-mode)
+(setq project-mode-line t)
+(setq project-kill-buffers-display-buffer-list t)
+(add-to-list
+ 'project-switch-commands '(project-switch-to-buffer "Switch buffer"))
+
+(setq eglot-connect-timeout 300) ;; for eglot-jl
+
+;; Julia
+(require 'julia-repl)
+(add-hook 'julia-mode-hook 'julia-repl-mode)
+(setenv "JULIA_EDITOR" "emacsclient -a -r")
+
+;; language server
+(add-hook
+ 'julia-mode-hook
+ (lambda ()
+   (require 'eglot-jl)
+   (eglot-jl-init)
+   (eglot-ensure)))
+
+(defun md-julia-format-on-save ()
+  "Enable format-on-save in Julia buffers using eglot."
+  (when (and (boundp 'eglot--managed-mode) eglot--managed-mode)
+    (add-hook 'before-save-hook #'eglot-format-buffer -10 t)))
+
+(add-hook
+ 'julia-mode-hook
+ (lambda ()
+   (require 'eglot-jl)
+   (eglot-jl-init)
+   (eglot-ensure)
+   (md-julia-format-on-save)))
 
 ;; Load crafted-lisp configuration
 ;; not workign for mit-scheme
 ;; (require 'crafted-lisp-config)
+
+;; lisp
+(add-hook 'lisp-mode-hook #'enable-paredit-mode)
+
+(customize-set-variable 'scheme-program-name "scheme")
+(require 'xscheme)
+(defun md-indent-scheme-buffer ()
+  "Indent the entire buffer."
+  (interactive)
+  (indent-region (point-min) (point-max)))
+
+(add-hook 'scheme-mode-hook #'enable-paredit-mode)
+(add-hook
+ 'scheme-mode-hook
+ (lambda () (add-hook 'before-save-hook #'md-indent-scheme-buffer nil t)))
+
+;; elisp
 (add-hook 'emacs-lisp-mode-hook #'elisp-autofmt-mode)
+(add-hook 'emacs-lisp-mode-hook #'enable-paredit-mode)
 (add-hook
  'elisp-autofmt-mode-hook
  (lambda () (add-hook 'before-save-hook #'elisp-autofmt-buffer nil 'local)))
-(customize-set-variable 'scheme-program-name "scheme")
-(require 'xscheme)
 
 ;; Load crafted-updates configuration
 (require 'crafted-updates-config)
 
 ;; Load crafted-org configuration
 (require 'crafted-org-config)
+
+(setq org-log-done t)
+(setq org-list-allow-alphabetical t)
+(setq org-hide-emphasis-markers t)
+
+(add-hook 'org-mode-hook #'org-indent-mode)
+(add-hook 'org-mode-hook #'visual-line-mode)
 (add-hook 'org-mode-hook #'flyspell-mode)
 
+(defun org-summary-todo (n-done n-not-done)
+  "Switch entry to DONE when all subentries are done, to TODO otherwise."
+  (let (org-log-done
+        org-todo-log-states) ; turn off logging
+    (org-todo
+     (if (= n-not-done 0)
+         "DONE"
+       "TODO"))))
+
+(add-hook 'org-after-todo-statistics-hook #'org-summary-todo)
+
+(setq org-file-apps '((auto-mode . emacs) ("\\.pdf\\'" . emacs)))
+(add-to-list
+ 'org-file-apps
+ '("\\.html\\'" . (lambda (file path) (browse-url-default-browser path))))
+
+(setq org-html-inline-images t)
+(setq org-html-with-latex 'dvipng)
+
+(setq org-latex-create-formula-image-program 'dvisvgm)
+(with-eval-after-load 'org
+  (setq org-latex-format-options
+        (plist-put org-format-latex-options :scale 1.5)))
+
+;; org babel
+(org-babel-do-load-languages
+ 'org-babel-load-languages '((julia . t) (scheme . t)))
+(with-eval-after-load 'ob-scheme
+  (setq org-babel-scheme-command "guile"))
+(defun md-org-confirm-babel-evaluate (lang body)
+  (not (member lang '("elisp" "C" "python" "julia" "scheme"))))
+(setq org-confirm-babel-evaluate #'md-org-confirm-babel-evaluate)
+(setq org-babel-default-header-args:scheme
+      '((:results . "value") (:session . "guile") (:exports . "both")))
+
 ;; Load crafted-writing configuration
+(setq markdown-command "pandoc")
 (require 'crafted-writing-config)
-(add-hook 'text-mode-hook #'flysepll-mode)
+(add-hook 'text-mode-hook #'flyspell-mode)
+
+(autoload 'pdf-view-mode "pdf-tools" "Major mode for viewing PDF files." t)
+(setq doc-view-resolution 300)
+(add-to-list 'auto-mode-alist '("\\.pdf\\'" . pdf-view-mode))
+(with-eval-after-load 'pdf-tools
+  (pdf-tools-install))
+(add-hook 'pdf-view-mode-hook (lambda () (display-line-numbers-mode -1)))
 
 ;; end crafted emacs setup
 
@@ -157,19 +262,22 @@ This ensures the given directory takes precedence when resolving executables."
   (add-to-list 'exec-path "/opt/homebrew/bin")
   (add-to-list 'exec-path "/opt/homebrew/opt/make/libexec/gnubin")
   (add-to-list 'exec-path "/Library/TeX/texbin")
+  (add-to-list 'exec-path (expand-file-name "~/.juliaup/bin"))
   (md-env-path-prepend "/usr/local/bin")
   (md-env-path-prepend "/opt/homebrew/bin")
   (md-env-path-prepend "/opt/homebrew/opt/make/libexec/gnubin")
   (md-env-path-prepend "/opt/homebrew/opt/llvm/bin")
-  (md-env-path-prepend "/Library/TeX/texbin"))
+  (md-env-path-prepend "/Library/TeX/texbin")
+  (md-env-path-prepend (expand-file-name "~/.juliaup/bin")))
 
 ;; global formatting
 (add-hook 'before-save-hook 'delete-trailing-whitespace 'delete-trailing-lines)
 (setq require-final-newline t)
 (setq-default fill-column 80)
 
-(load-theme 'modus-operandi t)
+(load-theme 'modus-operandi-deuteranopia)
 (add-to-list 'default-frame-alist '(font . "Source Code Pro-14"))
+;; (add-to-list 'default-frame-alist '(font . "Ioseivka-14"))
 
 (display-time)
 (tool-bar-mode -1)

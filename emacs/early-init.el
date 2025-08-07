@@ -4,8 +4,9 @@
 
 ;;; Code:
 
-(load (expand-file-name "crafted-emacs/modules/crafted-early-init-config"
-                  user-emacs-directory))
+(load
+ (expand-file-name "crafted-emacs/modules/crafted-early-init-config"
+                   user-emacs-directory))
 
 (defvar md-big-frame-alist
   '((width . 175) (height . 46) (left . 10) (top . 30)))
@@ -14,7 +15,7 @@
 (defvar md-narrow-frame-alist
   '((width . 85) (height . 35) (left . 10) (top . 30)))
 
-(setq default-frame-alist md-narrow-frame-alist)
+(setq default-frame-alist md-small-frame-alist)
 
 (setq initial-frame-alist default-frame-alist)
 
