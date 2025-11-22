@@ -1,7 +1,9 @@
-personal_ws-1.1 en 25 
+personal_ws-1.1 en 33 
 MPL
+Neumann
 SPDX
 TODO
+Triangularization
 Whitespace
 advection
 alph
@@ -13,14 +15,20 @@ emacs
 enumitem
 frac
 gnubin
+gnuplot
 homebrew
 inhomogeneous
 init
+julia
+jupyter
 macOS
 nonconstant
+nonsingular
+shoreward
 sprintf
 sqrt
 tanh
 texbin
+todo
 typeof
 usepackage

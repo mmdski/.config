@@ -42,20 +42,21 @@
 (add-to-list 'package-selected-packages 'julia-mode)
 (add-to-list 'package-selected-packages 'eglot-jl)
 (add-to-list 'package-selected-packages 'julia-repl)
+(add-to-list 'package-selected-packages 'jupyter)
 
 ;; add crafted-lisp package definitions to selected packages list
-;; (require 'crafted-lisp-packages)
+(require 'crafted-lisp-packages)
 (add-to-list 'package-selected-packages 'elisp-autofmt)
 (add-to-list 'package-selected-packages 'paredit)
 
 ;; add crafted-org package definitions to selected packages list
 (require 'crafted-org-packages)
 (add-to-list 'package-selected-packages 'ess)
-(add-to-list 'package-selected-packages 'ob-julia)
 
 ;; add crafted-writing package definitions to selected packages list
 (require 'crafted-writing-packages)
 (add-to-list 'package-selected-packages 'pdf-tools)
+(add-to-list 'package-selected-packages 'quarto-mode)
 
 ;; Install the packages listed in the `package-selected-packages' list.
 (package-install-selected-packages :noconfirm)
@@ -67,6 +68,7 @@
 
 ;; Load crafted-defaults configuration
 (require 'crafted-defaults-config)
+(put 'narrow-to-region 'disabled nil)
 
 ;; Load crafted-ui configuration
 (require 'crafted-ui-config)
@@ -89,6 +91,10 @@
 (setq project-kill-buffers-display-buffer-list t)
 (add-to-list
  'project-switch-commands '(project-switch-to-buffer "Switch buffer"))
+(require 'zmq)
+(ignore-errors
+  (zmq-load))
+(require 'jupyter)
 
 (setq eglot-connect-timeout 300) ;; for eglot-jl
 
@@ -98,13 +104,6 @@
 (setenv "JULIA_EDITOR" "emacsclient -a -r")
 
 ;; language server
-(add-hook
- 'julia-mode-hook
- (lambda ()
-   (require 'eglot-jl)
-   (eglot-jl-init)
-   (eglot-ensure)))
-
 (defun md-julia-format-on-save ()
   "Enable format-on-save in Julia buffers using eglot."
   (when (and (boundp 'eglot--managed-mode) eglot--managed-mode)
@@ -119,14 +118,18 @@
    (md-julia-format-on-save)))
 
 ;; Load crafted-lisp configuration
-;; not workign for mit-scheme
-;; (require 'crafted-lisp-config)
+;; not working for mit-scheme
+(require 'crafted-lisp-config)
 
 ;; lisp
 (add-hook 'lisp-mode-hook #'enable-paredit-mode)
 
-(customize-set-variable 'scheme-program-name "scheme")
-(require 'xscheme)
+;; (customize-set-variable 'scheme-program-name "scheme")
+;; (require 'xscheme)
+(customize-set-variable 'scheme-program-name "racket")
+(customize-set-variable 'geiser-active-implementations '(racket))
+(customize-set-variable 'geiser-default-implementation 'racket)
+
 (defun md-indent-scheme-buffer ()
   "Indent the entire buffer."
   (interactive)
@@ -179,19 +182,29 @@
 
 (setq org-latex-create-formula-image-program 'dvisvgm)
 (with-eval-after-load 'org
-  (setq org-latex-format-options
+  (setq org-format-latex-options
         (plist-put org-format-latex-options :scale 1.5)))
 
 ;; org babel
+;; (require 'ob-jupyter)
+(load (expand-file-name "ob-racket.el" user-emacs-directory))
+(require 'ob-racket)
 (org-babel-do-load-languages
- 'org-babel-load-languages '((julia . t) (scheme . t)))
-(with-eval-after-load 'ob-scheme
-  (setq org-babel-scheme-command "guile"))
+ 'org-babel-load-languages
+ '((julia . t)
+   (scheme . t)
+   (gnuplot . t)
+   (python . t)
+   (shell . t)
+   (jupyter . t)
+   (racket . t)))
+(with-eval-after-load 'ob-racket
+  (setq org-babel-racket-command "racket"))
 (defun md-org-confirm-babel-evaluate (lang body)
-  (not (member lang '("elisp" "C" "python" "julia" "scheme"))))
+  (not
+   (member
+    lang '("elisp" "julia" "scheme" "racket" "gnuplot" "jupyter-julia"))))
 (setq org-confirm-babel-evaluate #'md-org-confirm-babel-evaluate)
-(setq org-babel-default-header-args:scheme
-      '((:results . "value") (:session . "guile") (:exports . "both")))
 
 ;; Load crafted-writing configuration
 (setq markdown-command "pandoc")
@@ -226,6 +239,10 @@
   "Apply narrow frame settings."
   (interactive)
   (md-set-frame-size md-narrow-frame-alist))
+(defun md-hf ()
+  "Apply half frame settings."
+  (interactive)
+  (md-set-frame-size md-half-frame-alist))
 (defun md-rp ()
   "Reset the position of the frame."
   (interactive)
@@ -263,15 +280,19 @@ This ensures the given directory takes precedence when resolving executables."
   (add-to-list 'exec-path "/opt/homebrew/opt/make/libexec/gnubin")
   (add-to-list 'exec-path "/Library/TeX/texbin")
   (add-to-list 'exec-path (expand-file-name "~/.juliaup/bin"))
+  (add-to-list 'exec-path (expand-file-name "~/.cargo/bin"))
+  (add-to-list 'exec-path (expand-file-name "~/.pyenv/shims"))
   (md-env-path-prepend "/usr/local/bin")
   (md-env-path-prepend "/opt/homebrew/bin")
   (md-env-path-prepend "/opt/homebrew/opt/make/libexec/gnubin")
   (md-env-path-prepend "/opt/homebrew/opt/llvm/bin")
   (md-env-path-prepend "/Library/TeX/texbin")
-  (md-env-path-prepend (expand-file-name "~/.juliaup/bin")))
+  (md-env-path-prepend (expand-file-name "~/.juliaup/bin"))
+  (md-env-path-prepend (expand-file-name "~/.cargo/bin")))
 
 ;; global formatting
-(add-hook 'before-save-hook 'delete-trailing-whitespace 'delete-trailing-lines)
+(add-hook 'before-save-hook #'delete-trailing-whitespace)
+(setq delete-trailing-lines t)
 (setq require-final-newline t)
 (setq-default fill-column 80)
 

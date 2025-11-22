@@ -14,6 +14,8 @@
   '((width . 85) (height . 25) (left . 10) (top . 30)))
 (defvar md-narrow-frame-alist
   '((width . 85) (height . 35) (left . 10) (top . 30)))
+(defvar md-half-frame-alist
+  '((width . 88) (height . 46) (left . 10) (top . 30)))
 
 (setq default-frame-alist md-small-frame-alist)
 
