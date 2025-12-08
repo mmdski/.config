@@ -203,7 +203,8 @@
 (defun md-org-confirm-babel-evaluate (lang body)
   (not
    (member
-    lang '("elisp" "julia" "scheme" "racket" "gnuplot" "jupyter-julia"))))
+    lang
+    '("elisp" "julia" "scheme" "racket" "gnuplot" "jupyter-julia" "python"))))
 (setq org-confirm-babel-evaluate #'md-org-confirm-babel-evaluate)
 
 ;; Load crafted-writing configuration
