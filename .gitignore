@@ -5,7 +5,17 @@
 !emacs/
 !emacs/init.el
 !emacs/early-init.el
-!emacs/ob-racket.el
+
+!emacs/lisp/
+!emacs/lisp/md-completion.el
+!emacs/lisp/md-ide.el
+!emacs/lisp/md-lisp.el
+!emacs/lisp/md-ob.el
+!emacs/lisp/md-org.el
+!emacs/lisp/md-reading.el
+!emacs/lisp/md-ui.el
+!emacs/lisp/md-writing.el
+!emacs/lisp/ob-racket.el
 
 !ghostty/
 !ghostty/config

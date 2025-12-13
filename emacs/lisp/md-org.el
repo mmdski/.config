@@ -1,0 +1,51 @@
+;;; md-org.el --- -*- lexical-binding: t; -*-
+
+;;; Commentary:
+
+;;; Code:
+
+;;; denote - Simple notes with an efficient file-naming scheme
+(use-package denote)
+
+;;; org - Outline-based notes management and organizer
+(use-package
+ org
+ :ensure nil
+
+ :custom
+ (org-return-follows-link t)
+ (org-mouse-1-follows-link t)
+ (org-link-descriptive t)
+ (org-hide-emphasis-markers t)
+ (org-log-done t)
+ (org-list-allow-alphabetical t)
+ (org-html-inline-images t)
+ (org-latex-create-formula-image-program 'dvisvgm)
+ (org-file-apps '((auto-mode . emacs) ("\\.pdf\\'" . emacs)))
+
+ :config
+ (add-to-list
+  'org-file-apps
+  '("\\.html\\'" . (lambda (path) (browse-url-default-browser path))))
+
+ :hook
+ (org-mode . org-indent-mode)
+ (org-mode . flyspell-mode)
+ (org-mode . visual-line-mode)
+ (org-after-todo-statistics . org-summary-todo))
+
+;;; org-appear - Auto-toggle Org elements.
+(use-package org-appear :hook (org-mode . org-appear-mode))
+
+(defun org-summary-todo (n-done n-not-done)
+  "Switch entry to DONE when all subentries are done, to TODO otherwise.  N-DONE N-NOT-DONE."
+  (let (org-log-done
+        org-todo-log-states) ; turn off logging
+    (org-todo
+     (if (= n-not-done 0)
+         "DONE"
+       "TODO"))))
+
+;;; _
+(provide 'md-org)
+;;; md-org.el ends here
