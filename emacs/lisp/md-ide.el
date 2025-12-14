@@ -93,6 +93,14 @@
   nil
   'append))
 
+;;; Tree-sitter
+(use-package
+ treesit
+ :ensure nil
+ :when
+ (and (fboundp 'treesit-available-p) (treesit-available-p))
+ :custom (treesit-font-lock-level 4))
+
 ;;; ibuffer-project -  Group ibuffer's list by project or any function.
 (use-package
  ibuffer-project
@@ -153,6 +161,18 @@
          (if (daemonp)
              "emacsclient -a -r"
            "emacs")))
+
+;;; toml
+;; Tree-sitter TOML grammar
+(with-eval-after-load 'treesit
+  (add-to-list
+   'treesit-language-source-alist
+   '(toml . ("https://github.com/tree-sitter/tree-sitter-toml"))))
+
+(use-package
+ toml-ts-mode
+ :ensure nil
+ :mode ("\\.toml\\'" . toml-ts-mode))
 
 ;;; _
 (provide 'md-ide)
