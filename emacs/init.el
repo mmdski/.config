@@ -1,6 +1,6 @@
 ;;; init.el --- -*- lexical-binding: t; -*-
 
-;;; Commentary:
+;;; Commentary: Heavily inspired by Crafted Emacs
 
 ;;; Code:
 
@@ -10,22 +10,19 @@
 (add-to-list 'warning-suppress-types '(files missing-lexbind-cookie))
 
 ;; Keep Custom out of init.el
-(setq custom-file
-      (expand-file-name "md-custom.el" user-emacs-directory))
+(setq custom-file (expand-file-name "md-custom.el" user-emacs-directory))
 (when (file-exists-p custom-file)
   (load custom-file nil :nomessage))
 
 ;;;; 1. Load-path
-(add-to-list
- 'load-path (expand-file-name "lisp" user-emacs-directory))
+(add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
 
 ;;;; 2. Package system
 (require 'package)
 
 (add-to-list
  'package-archives '("stable" . "https://stable.melpa.org/packages/"))
-(add-to-list
- 'package-archives '("melpa" . "https://melpa.org/packages/"))
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
 (setq package-archive-priorities
       '(("gnu" . 99) ("nongnu" . 80) ("stable" . 70) ("melpa" . 0)))
 
@@ -116,8 +113,7 @@ This ensures the given directory takes precedence when resolving executables."
        (paths (split-string env-path md-env-path-sep))
        (normalized (directory-file-name path-to-prepend))) ;; remove trailing slash
     (unless (member normalized paths)
-      (setenv "PATH"
-              (concat path-to-prepend md-env-path-sep env-path)))))
+      (setenv "PATH" (concat path-to-prepend md-env-path-sep env-path)))))
 
 (when (not (eq system-type 'windows-nt))
   (md-env-path-prepend (expand-file-name "~/.local/bin")))
@@ -130,8 +126,7 @@ This ensures the given directory takes precedence when resolving executables."
   ;  (setq mac-option-modifier 'super) ; Option key is Super
   (add-to-list 'Info-directory-list "/opt/homebrew/share/info")
   (add-to-list 'Info-directory-list "/opt/homebrew/share/info/emacs")
-  (add-to-list
-   'Info-directory-list (expand-file-name "~/.local/share/info"))
+  (add-to-list 'Info-directory-list (expand-file-name "~/.local/share/info"))
   (add-to-list 'exec-path "/usr/local/bin")
   (add-to-list 'exec-path "/opt/homebrew/bin")
   (add-to-list 'exec-path "/opt/homebrew/opt/make/libexec/gnubin")

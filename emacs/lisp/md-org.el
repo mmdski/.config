@@ -4,9 +4,6 @@
 
 ;;; Code:
 
-;;; denote - Simple notes with an efficient file-naming scheme
-(use-package denote)
-
 ;;; org - Outline-based notes management and organizer
 (use-package
  org
@@ -45,6 +42,18 @@
      (if (= n-not-done 0)
          "DONE"
        "TODO"))))
+
+(with-eval-after-load 'org
+  (setq
+   org-cite-global-bibliography
+   (if (and (boundp 'citar-bibliography) citar-bibliography)
+       citar-bibliography
+     (list (expand-file-name "~/Documents/notes/references.bib")))
+   org-cite-insert-processor 'citar
+   org-cite-follow-processor 'citar
+   org-cite-activate-processor 'citar)
+
+  (define-key org-mode-map (kbd "C-c b") #'org-cite-insert))
 
 ;;; _
 (provide 'md-org)

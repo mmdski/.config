@@ -13,7 +13,7 @@
 (defvar md-half-frame-alist
   '((width . 88) (height . 46) (left . 10) (top . 30)))
 
-(setq default-frame-alist md-big-frame-alist)
+(setq default-frame-alist md-narrow-frame-alist)
 
 (setq initial-frame-alist default-frame-alist)
 

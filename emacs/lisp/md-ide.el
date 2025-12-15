@@ -126,15 +126,14 @@
 (use-package eglot-jl :after eglot)
 
 ;; Julia REPL
-(use-package julia-repl)
-
-;; Flycheck Julia
-;; (use-package flycheck-julia
-;;   :after flycheck
-;;   :hook
-;;   ((julia-mode ess-julia-mode) . flycheck-mode)
-;;   :config
-;;   (flycheck-julia-setup))
+(use-package
+ julia-repl
+ :ensure t
+ :after (vterm julia-mode)
+ :hook (julia-mode . julia-repl-mode)
+ :config
+ (with-eval-after-load 'julia-repl
+   (julia-repl-set-terminal-backend 'vterm)))
 
 ;; Julia mode
 (use-package
@@ -151,12 +150,8 @@
     (eglot-ensure)
 
     ;; Format on save (buffer-local)
-    (add-hook 'before-save-hook #'eglot-format-buffer -10 t)
-
-    ;; REPL integration
-    (julia-repl-mode 1)))
+    (add-hook 'before-save-hook #'eglot-format-buffer -10 t)))
  :init
- ;; Used by julia-repl and editor integrations
  (setenv "JULIA_EDITOR"
          (if (daemonp)
              "emacsclient -a -r"

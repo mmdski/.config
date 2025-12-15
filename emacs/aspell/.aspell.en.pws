@@ -1,4 +1,4 @@
-personal_ws-1.1 en 33 
+personal_ws-1.1 en 34 
 MPL
 Neumann
 SPDX
@@ -22,6 +22,7 @@ init
 julia
 jupyter
 macOS
+md
 nonconstant
 nonsingular
 shoreward
