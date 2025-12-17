@@ -8,8 +8,7 @@
  pdf-tools
  :mode ("\\.pdf\\'" . pdf-view-mode)
  :custom (doc-view-resolution 300)
- :hook
- (pdf-view-mode . (lambda () (display-line-numbers-mode -1)))
+ :hook (pdf-view-mode . (lambda () (display-line-numbers-mode -1)))
  :config (pdf-tools-install))
 
 (use-package
@@ -17,6 +16,16 @@
  :mode ("\\.epub\\'" . nov-mode)
  :hook (nov-mode . visual-line-mode))
 
+(use-package
+ elfeed
+ :bind (("C-x w" . elfeed))
+ :config
+ (setq elfeed-feeds
+       '("http://nullprogram.com/feed/"
+         "https://planet.emacslife.com/atom.xml"
+         "https://lee-phillips.org/updates.xml"
+         "https://viralinstruction.com/feed.xml"
+         "https://www.masteringemacs.org/feed")))
 
 ;;; _
 (provide 'md-reading)
