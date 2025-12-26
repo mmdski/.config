@@ -36,6 +36,8 @@
 
 (global-auto-revert-mode 1)
 (delete-selection-mode)
+(setq large-file-warning-threshold 100000000)
+(setq switch-to-buffer-obey-display-actions t)
 
 ;; Better support for files with long lines
 (setq-default bidi-paragraph-direction 'left-to-right)
@@ -124,6 +126,8 @@ This ensures the given directory takes precedence when resolving executables."
 (when (eq system-type 'darwin) ; macOS
   ;  (setq mac-command-modifier 'meta) ; Command key is Meta
   ;  (setq mac-option-modifier 'super) ; Option key is Super
+  (global-set-key (kbd "s-q") #'delete-frame)
+  (global-set-key (kbd "s-w") #'kill-buffer-and-window)
   (add-to-list 'Info-directory-list "/opt/homebrew/share/info")
   (add-to-list 'Info-directory-list "/opt/homebrew/share/info/emacs")
   (add-to-list 'Info-directory-list (expand-file-name "~/.local/share/info"))

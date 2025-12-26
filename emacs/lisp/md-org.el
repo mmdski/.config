@@ -19,11 +19,13 @@
  (org-html-inline-images t)
  (org-latex-create-formula-image-program 'dvisvgm)
  (org-file-apps '((auto-mode . emacs) ("\\.pdf\\'" . emacs)))
+ (setq org-latex-packages-alist '(("" "mathtools" t)))
 
  :config
  (add-to-list
   'org-file-apps
   '("\\.html\\'" . (lambda (path) (browse-url-default-browser path))))
+ (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5))
 
  :hook
  (org-mode . org-indent-mode)

@@ -4,6 +4,13 @@
 
 ;;; Code:
 
+;;; Desktop
+(use-package
+ desktop
+ :ensure nil
+ :init (desktop-save-mode 1)
+ :config (add-to-list 'desktop-path "."))
+
 ;;; Speedbar
 (use-package
  speedbar
@@ -54,19 +61,13 @@
 (use-package
  project
  :ensure nil
- :custom
- (project-mode-line t)
- (project-kill-buffers-display-buffer-list t)
+ :custom (project-mode-line t) (project-kill-buffers-display-buffer-list t)
  :config
  (add-to-list
-  'project-switch-commands
-  '(project-switch-to-buffer "Switch buffer")))
+  'project-switch-commands '(project-switch-to-buffer "Switch buffer")))
 
 ;;; Flyspell
-(use-package
- flyspell
- :ensure nil
- :hook (prog-mode . flyspell-prog-mode))
+(use-package flyspell :ensure nil :hook (prog-mode . flyspell-prog-mode))
 
 ;; aggressive-indent — Minor mode to aggressively keep code indented
 ;; activation is per-language
@@ -77,10 +78,7 @@
 (use-package eglot :ensure nil)
 
 ;;; editorconfig
-(use-package
- editorconfig
- :ensure nil
- :hook (prog-mode . editorconfig-mode))
+(use-package editorconfig :ensure nil :hook (prog-mode . editorconfig-mode))
 
 (use-package
  magit
@@ -88,17 +86,13 @@
  :config
  ;; Show tracked files in magit-status
  (magit-add-section-hook
-  'magit-status-sections-hook
-  'magit-insert-tracked-files
-  nil
-  'append))
+  'magit-status-sections-hook 'magit-insert-tracked-files nil 'append))
 
 ;;; Tree-sitter
 (use-package
  treesit
  :ensure nil
- :when
- (and (fboundp 'treesit-available-p) (treesit-available-p))
+ :when (and (fboundp 'treesit-available-p) (treesit-available-p))
  :custom (treesit-font-lock-level 4))
 
 ;;; ibuffer-project -  Group ibuffer's list by project or any function.
@@ -109,8 +103,7 @@
  (ibuffer
   .
   (lambda ()
-    (setq ibuffer-filter-groups
-          (ibuffer-project-generate-filter-groups))
+    (setq ibuffer-filter-groups (ibuffer-project-generate-filter-groups))
     (unless (eq ibuffer-sorting-mode 'project-file-relative)
       (ibuffer-do-sort-by-project-file-relative)))))
 
@@ -164,10 +157,7 @@
    'treesit-language-source-alist
    '(toml . ("https://github.com/tree-sitter/tree-sitter-toml"))))
 
-(use-package
- toml-ts-mode
- :ensure nil
- :mode ("\\.toml\\'" . toml-ts-mode))
+(use-package toml-ts-mode :ensure nil :mode ("\\.toml\\'" . toml-ts-mode))
 
 ;;; _
 (provide 'md-ide)

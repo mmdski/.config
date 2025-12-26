@@ -1,4 +1,4 @@
-personal_ws-1.1 en 34 
+personal_ws-1.1 en 35 
 MPL
 Neumann
 SPDX
@@ -19,6 +19,7 @@ gnuplot
 homebrew
 inhomogeneous
 init
+jl
 julia
 jupyter
 macOS
