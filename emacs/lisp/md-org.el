@@ -4,6 +4,15 @@
 
 ;;; Code:
 
+(defun md-org-summary-todo (n-done n-not-done)
+  "Switch entry to DONE when all subentries are done, to TODO otherwise."
+  (let (org-log-done
+        org-todo-log-states) ; turn off logging
+    (org-todo
+     (if (= n-not-done 0)
+         "DONE"
+       "TODO"))))
+
 ;;; org - Outline-based notes management and organizer
 (use-package
  org
@@ -19,31 +28,24 @@
  (org-html-inline-images t)
  (org-latex-create-formula-image-program 'dvisvgm)
  (org-file-apps '((auto-mode . emacs) ("\\.pdf\\'" . emacs)))
- (setq org-latex-packages-alist '(("" "mathtools" t)))
 
  :config
  (add-to-list
   'org-file-apps
   '("\\.html\\'" . (lambda (path) (browse-url-default-browser path))))
  (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5))
+ (add-to-list 'org-latex-packages-alist '("" "mathtools" t))
 
  :hook
  (org-mode . org-indent-mode)
  (org-mode . flyspell-mode)
  (org-mode . visual-line-mode)
- (org-after-todo-statistics . org-summary-todo))
+ (org-after-todo-statistics . md-org-summary-todo))
+
+(add-hook 'org-after-todo-statistics-hook #'md-org-summary-todo)
 
 ;;; org-appear - Auto-toggle Org elements.
 (use-package org-appear :hook (org-mode . org-appear-mode))
-
-(defun org-summary-todo (n-done n-not-done)
-  "Switch entry to DONE when all subentries are done, to TODO otherwise.  N-DONE N-NOT-DONE."
-  (let (org-log-done
-        org-todo-log-states) ; turn off logging
-    (org-todo
-     (if (= n-not-done 0)
-         "DONE"
-       "TODO"))))
 
 (with-eval-after-load 'org
   (setq

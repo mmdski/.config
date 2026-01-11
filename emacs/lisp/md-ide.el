@@ -159,6 +159,29 @@
 
 (use-package toml-ts-mode :ensure nil :mode ("\\.toml\\'" . toml-ts-mode))
 
+(use-package
+ cc-mode
+ :ensure nil
+ :mode
+ (("\\.c\\'" . c-mode)
+  ("\\.h\\'" . c-mode)
+  ("\\.cc\\'" . c++-mode)
+  ("\\.cpp\\'" . c++-mode)
+  ("\\.cxx\\'" . c++-mode)
+  ("\\.hpp\\'" . c++-mode)
+  ("\\.hxx\\'" . c++-mode))
+ :hook ((c-mode c++-mode) . eglot-ensure)
+ :config
+ (setq
+  c-basic-offset 4
+  indent-tabs-mode nil))
+
+(use-package
+ clang-format
+ :bind (("C-c f" . clang-format-region) ("C-c F" . clang-format-buffer)))
+
+(use-package cmake-mode)
+
 ;;; _
 (provide 'md-ide)
 ;;; md-ide.el ends here

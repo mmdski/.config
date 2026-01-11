@@ -14,10 +14,16 @@
 (scroll-bar-mode -1)
 (tool-bar-mode -1)
 
-(use-package
- dired
- :ensure nil
- :hook (dired-mode . dired-hide-details-mode))
+;; prefer the more full-featured built-in ibuffer for managing
+;; buffers.
+(keymap-global-set "<remap> <list-buffers>" #'ibuffer-list-buffers)
+;; turn off forward and backward movement cycling
+(customize-set-variable 'ibuffer-movement-cycle nil)
+;; the number of hours before a buffer is considered "old" by
+;; ibuffer.
+(customize-set-variable 'ibuffer-old-time 24)
+
+(use-package dired :ensure nil :hook (dired-mode . dired-hide-details-mode))
 
 ;; Global variables: set with setq
 (setq
@@ -36,7 +42,7 @@
   (menu-bar-mode -1))
 
 ;; show line numbers
-(dolist (hook '(prog-mode-hook conf-mode-hook text-mode-hook))
+(dolist (hook '(prog-mode-hook conf-mode-hook))
   (add-hook
    hook
    (lambda ()
@@ -66,17 +72,14 @@
   ("<remap> <describe-variable>" . helpful-variable)
   ("C-h F" . helpful-function)
   ("C-h K" . describe-keymap))
- :bind
- (:map helpful-mode-map ("<remap> <revert-buffer>" . helpful-update)))
+ :bind (:map helpful-mode-map ("<remap> <revert-buffer>" . helpful-update)))
 
 ;;; elisp-demos - Elisp API Demos.
 (use-package
  elisp-demos
  :after helpful
  :config
- (advice-add
-  'helpful-update
-  :after #'elisp-demos-advice-helpful-update))
+ (advice-add 'helpful-update :after #'elisp-demos-advice-helpful-update))
 
 ;;; all-the-icons - A library for inserting Developer icons.
 (use-package all-the-icons)

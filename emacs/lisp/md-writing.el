@@ -11,6 +11,16 @@
 (setq require-final-newline t)
 (setq-default fill-column 80)
 
+(defun md-ensure-final-newline ()
+  "Ensure the current buffer ends with a newline."
+  (unless (or (minibufferp) (derived-mode-p 'special-mode))
+    (save-excursion
+      (goto-char (point-max))
+      (unless (bolp)
+        (insert "\n")))))
+
+(add-hook 'before-save-hook #'md-ensure-final-newline)
+
 ;; set the Ispell personal dictionary location
 (setq ispell-personal-dictionary
       (expand-file-name "aspell/.aspell.en.pws" user-emacs-directory))
@@ -18,8 +28,7 @@
 (use-package
  markdown-mode
  :ensure t
- :mode
- (("README\\.md\\'" . gfm-mode) ("\\.md\\'" . markdown-mode))
+ :mode (("README\\.md\\'" . gfm-mode) ("\\.md\\'" . markdown-mode))
  :custom (markdown-command "pandoc")
  :bind (:map markdown-mode-map ("C-c C-e" . markdown-do))
  :hook
@@ -47,12 +56,21 @@
   ("C-c n d" . denote-dired)
   ("C-c n g" . denote-grep))
  :config (setq denote-directory (expand-file-name "~/Documents/notes/"))
+ (setq denote-org-front-matter
+       (concat
+        (string-chop-newline denote-org-front-matter)
+        "#+startup: overview
+#+startup: latexpreview
+#+startup: inlineimages
+
+"))
 
  ;; Automatically rename Denote buffers when opening them so that
  ;; instead of their long file name they have, for example, a literal
  ;; "[D]" followed by the file's title.  Read the doc string of
  ;; `denote-rename-buffer-format' for how to modify this.
  (denote-rename-buffer-mode 1))
+
 
 (use-package
  citar

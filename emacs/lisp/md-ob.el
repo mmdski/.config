@@ -17,13 +17,7 @@ the value of `org-confirm-babel-evaluate`."
   (not
    (member
     lang
-    '("elisp"
-      "julia"
-      "scheme"
-      "racket"
-      "gnuplot"
-      "jupyter-julia"
-      "python"))))
+    '("elisp" "julia" "scheme" "racket" "gnuplot" "jupyter-julia" "python"))))
 
 (use-package
  org
@@ -45,6 +39,18 @@ the value of `org-confirm-babel-evaluate`."
  :ensure nil
  :after org
  :custom (org-babel-racket-command "racket"))
+
+(use-package
+ ob-julia-vterm
+ :after org
+ :config (defalias 'org-babel-execute:julia 'org-babel-execute:julia-vterm)
+ (defalias
+   'org-babel-variable-assignments:julia
+   'org-babel-variable-assignments:julia-vterm)
+ (with-eval-after-load 'org
+   (add-to-list 'org-babel-load-languages '(julia-vterm . t))
+   (org-babel-do-load-languages
+    'org-babel-load-languages org-babel-load-languages)))
 
 (provide 'md-ob)
 ;;; md-ob.el ends here
