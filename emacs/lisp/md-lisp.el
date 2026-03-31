@@ -37,10 +37,10 @@
  (elisp-autofmt-on-save-p 'always))
 
 ;; set universal hooks for emacs-lisp-mode
-(use-package
- emacs-lisp-mode
- :ensure nil
- :hook (emacs-lisp-mode . enable-paredit-mode))
+;; (use-package
+;;  emacs-lisp-mode
+;;  :ensure nil
+;;  :hook (emacs-lisp-mode . enable-paredit-mode))
 
 ;; lisp interaction mode
 (use-package

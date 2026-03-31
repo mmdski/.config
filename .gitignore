@@ -6,7 +6,12 @@
 !emacs/init.el
 !emacs/early-init.el
 
+!emacs/info/elispelem.info
+!emacs/info/sicp.info
+
 !emacs/lisp/
+!emacs/lisp/bible-mode.el
+!emacs/lisp/md-bible.el
 !emacs/lisp/md-completion.el
 !emacs/lisp/md-ide.el
 !emacs/lisp/md-lisp.el

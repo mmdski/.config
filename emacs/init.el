@@ -122,6 +122,9 @@ This ensures the given directory takes precedence when resolving executables."
 
 (require 'info)
 
+(add-to-list
+ 'Info-directory-list (expand-file-name "info" user-emacs-directory))
+
 ;; macOS specific settings
 (when (eq system-type 'darwin) ; macOS
   ;  (setq mac-command-modifier 'meta) ; Command key is Meta
@@ -172,6 +175,9 @@ This ensures the given directory takes precedence when resolving executables."
 ;;; reading
 (require 'md-reading)
 
+(require 'md-bible)
+
 ;;; _
 (provide 'init)
 ;;; init.el ends here
+(put 'narrow-to-region 'disabled nil)
